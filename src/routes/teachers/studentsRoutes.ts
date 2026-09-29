@@ -10,4 +10,7 @@ route.get("/get-all",verifyTeacher,getStudents)
 route.patch("/update-status/:id",verifyTeacher,ToggleStudent)
 route.get("/getqna/:id",verifyTeacher,getAnswers)
 
+
+
+
 export default route;

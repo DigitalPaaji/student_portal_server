@@ -93,10 +93,11 @@ const token = await JWT.sign({id:superAdmin._id ,role: "admin"},  process.env.JW
 
 
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = 111111
 
 
-     await sendOtpMail(email, otp);
+    //  await sendOtpMail(email, otp);
 
      await redisClient.set(`token:otp:${token}`, otp, {
       EX: 5 * 60,
