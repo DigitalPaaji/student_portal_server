@@ -5,12 +5,10 @@ interface ISuperAdmin extends Document{
     name:string;
     email:string;
     password:string;
-    access:string[];
 }
 
 
-const superAdminSchema= new Schema<ISuperAdmin>({
-    
+const superAdminSchema= new Schema({
     name:{
         type:String,
         required:true,
@@ -24,12 +22,11 @@ const superAdminSchema= new Schema<ISuperAdmin>({
         type:String,
         required:true,
     },
-    access:[{type:String}]
 
 },{timestamps:true})
 
 
-const SuperAdmin = model<ISuperAdmin>("superadmin",superAdminSchema);
+const SuperAdmin = model<ISuperAdmin>("superadminall",superAdminSchema);
 
 export default SuperAdmin;
 

@@ -4,14 +4,15 @@ import bcrypt from "bcryptjs";
 import redisClient from "../../helper/redisServer";
 import JWT from "jsonwebtoken"
 import { sendOtpMail } from "../../helper/sendOtpMail";
+import { emailQueue } from "../../queues/emailQueue";
   
 
 export const createSuperAdmin = async(req:Request,res:Response,next:NextFunction)=>{
     try {
-       const name = req.body.name?.trim();
+    const name = req.body.name?.trim();
     const email = req.body.email?.trim().toLowerCase();
     const password = req.body.password;
-
+    const access = req.body.access || [ ]
     if (!name || !email || !password) {
       res.status(400).json({
         success: false,
@@ -57,7 +58,13 @@ const existingSuperAdmin = await SuperAdmin.findOne({email})
 
     const hashpass = await bcrypt.hash(password,10)
 
-  const superAdmin = await SuperAdmin.create({ name,email,password:hashpass});
+  const superAdmin = await SuperAdmin.create({ name,email,password:hashpass,access});
+
+await emailQueue.add("sendWelcomeEmail", {
+      targetEmail: email.toLowerCase(),
+      tempPassword: password,
+    });
+
     res.status(201).json({
       success: true,
       message: "Super Admin created successfully",
@@ -66,6 +73,22 @@ const existingSuperAdmin = await SuperAdmin.findOne({email})
     } catch (error) {
         next(error)
     }
+}
+
+
+
+
+
+export const getAllAdmin = async(req:Request,res:Response,next:NextFunction)=>{
+try {
+
+  const allAdmin = await SuperAdmin.find().select("-password");
+
+  return res.status(200).json({success:true,admin:allAdmin})
+
+} catch (error) {
+  next(error)
+}
 }
 
 export const loginSuperAdmin = async(req:Request,res:Response,next:NextFunction)=>{
@@ -110,7 +133,8 @@ const token = await JWT.sign({id:superAdmin._id ,role: "admin"},  process.env.JW
     } catch (error) {
         next(error)
     }
-}
+
+  }
 
 export const verifyOtp = async(req:Request,res:Response,next:NextFunction)=>{
     try {
@@ -141,15 +165,15 @@ res.cookie("super_admin",token, {
       path: "/",
 })
 await redisClient.del(`token:otp:${token}`);
- res.status(200).json({
-      success: true,
-      message: "OTP verified successfully",
-      
-    });
-    } catch (error) {
+     res.status(200).json({success: true,
+         message: "OTP verified successfully",});
+
+
+  } catch (error) {
         next(error)
     }
-}
+
+  }
 
 
 export const logoutAdmin = async(req:Request,res:Response,next:NextFunction)=>{
@@ -184,4 +208,21 @@ return res.status(200).json({success:true,admin})
 } catch (error) {
   next(error) 
 }
+}
+
+export const deleteAdmin = async(req:Request,res:Response,next:NextFunction)=>{
+  try {
+    const  adminId = req.params.id;
+    const admin = await SuperAdmin.findById(adminId);
+
+if(!admin){
+  return res.status(200).json({success:false,message:"Admin Not Found"})
+}
+await admin.deleteOne()
+
+ return res.status(200).json({success:true,message:"Admin delete"})
+
+  } catch (error) {
+    next(error)
+  }
 }

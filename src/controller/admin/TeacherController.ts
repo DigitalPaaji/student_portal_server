@@ -13,6 +13,15 @@ import { TeacherAttendance } from "../../models/TeacherAtendence";
 
 export const signupTeacher = async (req: Request,res: Response,next:NextFunction) => {
   try {
+
+ const {access} = req.admin;
+
+    if(!access.includes("createteacher")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
     const {fullname,email,password,phone,designation,specialization,bio,qualification,experience,subjects,
     } = req.body;
       
@@ -74,6 +83,14 @@ export const getAllTeachers = async (
   next:NextFunction
 ) => {
   try {
+    const {access} = req.admin;
+
+    if(!access.includes("getteacher")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
     const teachers = await Teacher.find()
       .select("email experience fullname isActive profileImage")
       .sort({ createdAt: -1 });
@@ -93,6 +110,14 @@ export const getAllTeachers = async (
 
 export const ToggleTeacher = async( req: Request,res: Response,next:NextFunction)=>{
 try {
+
+    const {access} = req.admin;
+
+    if(!access.includes("deleteteacher")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
   const teacherID = req.params.id;
 
    const teacher = await Teacher.findById(teacherID);
@@ -246,6 +271,15 @@ export const createTeacherAttendance = async (
   next: NextFunction
 ) => {
   try {
+
+  const {access} = req.admin;
+
+    if(!access.includes("attendanceteacher")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
     const { teacherId, date, status, remarks } = req.body;
 
     const teacher = await Teacher.findById(teacherId);
@@ -281,3 +315,11 @@ export const createTeacherAttendance = async (
     next(error);
   }
 };
+
+
+
+
+
+
+
+

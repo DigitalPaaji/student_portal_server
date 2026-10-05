@@ -136,3 +136,56 @@ return res.status(200).json({success:true,fullmodule:fullmodule.answerSubmite,qu
   }
 }
 
+export const UpdateAnswers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const action = req.params.action;
+    const moduleId = req.params.id;
+
+    const { recordid, recorduser } = req.body;
+
+    const moduleget = await ModuleModel.findById(moduleId);
+
+    if (!moduleget) {
+      return res.status(404).json({
+        success: false,
+        message: "Module not found",
+      });
+    }
+
+    if (action === "pass") {
+      moduleget.answerSubmite = moduleget.answerSubmite.map((itm) =>
+        itm.user.toString() === recorduser.toString()
+          ? { ...itm, pass: true }
+          : itm
+      );
+    } else if (action === "retry") {
+       moduleget.answerSubmite = moduleget.answerSubmite.filter(
+        (itm) => String(itm.user) !== String(recorduser)
+      );
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid action",
+      });
+    }
+
+    await moduleget.save();
+
+    return res.status(200).json({
+      success: true,
+      message:
+        action === "pass"
+          ? "Answer marked as passed"
+          : "Answer marked for retry",
+   
+      moduleget,
+    
+    });
+  } catch (error) {
+    next(error);
+  }
+};

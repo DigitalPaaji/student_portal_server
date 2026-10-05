@@ -14,17 +14,15 @@ export interface IModule extends Document {
   description?: string;
   content?: string;
   order: number;
-
+  level :number;
   createBy: mongoose.Types.ObjectId;
   createByModel: "superadmin" | "Teacher";
-
   answerSubmite: IAnswerSubmit[];
-
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   isActive: boolean;
-
   createdAt: Date;
   updatedAt: Date;
+
 }
 
 const AnswerSubmitSchema = new Schema<IAnswerSubmit>(
@@ -59,7 +57,10 @@ const ModuleSchema = new Schema<IModule>(
       required: true,
       index: true,
     },
-
+  level:{
+    type:Number,
+    default:1
+  },
     title: {
       type: String,
       required: true,

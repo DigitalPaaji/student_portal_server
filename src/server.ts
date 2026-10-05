@@ -2,6 +2,13 @@ import "dotenv/config";
 import express from "express";
 import type { Request, Response }  from "express";
 import cookieParser from "cookie-parser"
+import  SuperAdminAuthRoutes from "./routes/superadmin/AdminAuthRoutes"
+
+
+
+
+
+
 import  AdminAuthRoutes from "./routes/admin/AdminAuthRoutes"
 import  teacherRoutes from "./routes/admin/teacherRoutes"
 import  SubjectRoutesadmin from "./routes/admin/subjectRoutes"
@@ -82,6 +89,20 @@ return res.status(200).send("Pong")
 app.get("/api/v1/routeverify",verifyAuth)
 
     
+
+//superAdmin  
+app.use("/api/v1/super/auth",SuperAdminAuthRoutes)
+
+
+
+
+
+
+
+//admin
+
+
+
 app.use("/api/v1/admin/auth",AdminAuthRoutes)
 app.use("/api/v1/admin/teacher",teacherRoutes)
 app.use("/api/v1/admin/subject",SubjectRoutesadmin)

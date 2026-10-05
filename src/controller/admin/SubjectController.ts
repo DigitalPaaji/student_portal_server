@@ -7,6 +7,15 @@ import mongoose from "mongoose";
 
 export const CreateSubject=async(req:Request,res:Response,next:NextFunction)=>{
     try {
+
+const {access} = req.admin;
+
+    if(!access.includes("createsubject")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
        const {subject}=req.body;
        const admin = req.admin
        const FineSubject = subject.trim().toLowerCase();
@@ -30,9 +39,16 @@ createSubject.populate("createBy","email");
     }
 }
 
-
 export const getSubject = async(req:Request,res:Response,next:NextFunction)=>{
     try {
+const {access} = req.admin;
+
+    if(!access.includes("getsubject")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
     const subjects = await Subject.find().populate("createBy","email");
  return res.status(200).json({success:true,subjects})
      
@@ -46,6 +62,14 @@ export const getSubject = async(req:Request,res:Response,next:NextFunction)=>{
 
 export const EditSubject = async(req:Request,res:Response,next:NextFunction)=>{
     try {
+const {access} = req.admin;
+
+    if(!access.includes("editsubject")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
  const { id } = req.params;
     const { subject } = req.body;       
     if (!subject?.trim()) {
@@ -82,10 +106,16 @@ const updatedSubject = await Subject.findByIdAndUpdate(
     }
 }
 
-
 export const deleteSubject = async (req:Request,res:Response,next:NextFunction) => {
 try {
-      
+      const {access} = req.admin;
+
+    if(!access.includes("deletesubject")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
     const { id } = req.params;
 
     const subject = await Subject.findByIdAndDelete(id);
@@ -105,7 +135,6 @@ try {
       }
 }
 
-
 const createSlug = (text: string) => {
   return text
     .toLowerCase()
@@ -117,6 +146,16 @@ const createSlug = (text: string) => {
 
 export const AddnewModules = async (req:Request,res:Response,next:NextFunction) => {
     try {
+ const {access} = req.admin;
+
+    if(!access.includes("createmodule")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
+
+      
          const { title,description,content,status,subjectId}=req.body;
          const Admin = req.admin
      if (!Admin?._id) {
@@ -177,9 +216,17 @@ if (!subject) {
     }
 }
 
-
 export const getModules = async(req:Request,res:Response,next:NextFunction)=>{
     try {
+
+ const {access} = req.admin;
+
+    if(!access.includes("getmodule")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
   const subjectId = req.params.id;
 
  const modules = await ModuleModel.find({subjectId});
@@ -196,6 +243,15 @@ return res.status(200).json({success:true,modules})
 
 export const updateModules = async(req:Request,res:Response,next:NextFunction)=>{
 try {
+
+ const {access} = req.admin;
+
+    if(!access.includes("editmodule")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
 const moduleId = req.params.id;
 
  const {title,description,content,status} = req.body
@@ -226,6 +282,15 @@ module.status= status
 
 export const deleteModules = async(req:Request,res:Response,next:NextFunction)=>{
 try {
+
+ const {access} = req.admin;
+
+    if(!access.includes("deletemodule")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
 const moduleId = req.params.id;
 
 
@@ -252,7 +317,6 @@ const moduleId = req.params.id;
     next(error)
 }
 }
-
 
 export const addQuestions = async(req:Request,res:Response,next:NextFunction)=>{
   try {
@@ -384,7 +448,6 @@ return res.status(200).json({success:true,message:"Question deleted"})
     next(error)
   }
 }
-
 
 export const UpdateQuestion = async(req:Request,res:Response,next:NextFunction)=>{
   try {
