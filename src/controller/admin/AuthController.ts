@@ -75,6 +75,24 @@ await emailQueue.add("sendWelcomeEmail", {
     }
 }
 
+export const EditAdmin = async(req:Request,res:Response,next:NextFunction)=>{
+  try {
+const adminId = req.params.id;
+const {name,access} = req.body;
+const admin = await SuperAdmin.findById(adminId)
+if(!admin){
+  return res.status(401).json({success:false,message:"admin not found"})
+}
+ admin.name = name ? name : admin.name
+ admin.access = access
+await admin.save()
+
+return res.status(200).json({success:true,message:"Admin updated"})
+  } catch (error) {
+    next(error)
+  }
+}
+
 
 
 
@@ -90,6 +108,23 @@ try {
   next(error)
 }
 }
+
+
+export const getSingleAdmin = async(req:Request,res:Response,next:NextFunction)=>{
+try {
+const adminId = req.params.id
+
+  const allAdmin = await SuperAdmin.findById(adminId).select("-password");
+
+  return res.status(200).json({success:true,admin:allAdmin})
+
+} catch (error) {
+  next(error)
+}
+}
+
+
+
 
 export const loginSuperAdmin = async(req:Request,res:Response,next:NextFunction)=>{
     try {

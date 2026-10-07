@@ -106,3 +106,24 @@ res.cookie("super_admin",token, {
 }
 
 
+export const logoutSuperAdmin = async(req:Request,res:Response,next:NextFunction)=>{
+try {
+   const isProduction = process.env.NODE_ENV === "production";
+
+    res.clearCookie("super_admin", {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      path: "/",
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Super Admin logged out successfully",
+    });
+} catch (error) {
+  next(error)
+}
+
+}
+

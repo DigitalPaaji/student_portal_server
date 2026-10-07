@@ -91,6 +91,14 @@ export const createStudents = async (
 
 export const getStudents = async (req:Request,res:Response,next:NextFunction)=>{
   try {
+const {access} = req.admin;
+
+    if(!access.includes("getstudent")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
     const students = await StudentModel.find() .select("email phone fullname isActive profileImage studentId status")
       .sort({ createdAt: -1 });
 return res.status(200).json({success:true,students})
