@@ -1,41 +1,85 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+
+
+export type LeadStatus =
+  | "NEW"
+  | "CONTACTED"
+  | "INTERESTED"
+  | "FOLLOW_UP"
+  | "CONVERTED"
+  | "NOT_INTERESTED"
+  | "LOST";
+
+export type LeadPriority = "LOW" | "MEDIUM" | "HIGH";
+
+export type LeadSource =
+  | "WEBSITE"
+  | "FACEBOOK"
+  | "INSTAGRAM"
+  | "GOOGLE"
+  | "WHATSAPP"
+  | "REFERRAL"
+  | "CALL"
+  | "WALK_IN"
+  | "OTHER";
+
+export type MaritalStatus = "single" | "married";
+
+export type Gender = "male" | "female";
+
+export type PreferredMode = "online" | "offline";
+
+/* ---------------------------------- */
+/* Student Lead Interface */
+/* ---------------------------------- */
+
 export interface IStudentLead extends Document {
   name: string;
+
+  father?: string;
+  mother?: string;
+
+  dob?: Date | null;
+
+  marital: MaritalStatus;
+  gender: Gender;
+
   phone: string;
+  guardianPhone: string;
+
   email?: string;
 
   qualification?: string;
+
+  address?: string;
   city?: string;
   state?: string;
 
   course?: string;
   interestedCourse?: string;
 
-  source?: string;
+  source: LeadSource;
 
-  status:
-    | "NEW"
-    | "CONTACTED"
-    | "INTERESTED"
-    | "FOLLOW_UP"
-    | "CONVERTED"
-    | "NOT_INTERESTED"
-    | "LOST";
+  status: LeadStatus;
 
-  priority: "LOW" | "MEDIUM" | "HIGH";
+  priority: LeadPriority;
 
+  preferredMode: PreferredMode;
 
   notes?: string;
 
   converted: boolean;
- 
 
   createdBy?: mongoose.Types.ObjectId;
 
   createdAt: Date;
   updatedAt: Date;
 }
+
+/* ---------------------------------- */
+/* Schema */
+/* ---------------------------------- */
 
 const StudentLeadSchema = new Schema<IStudentLead>(
   {
@@ -45,7 +89,40 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       trim: true,
     },
 
+    father: {
+      type: String,
+      trim: true,
+    },
+
+    mother: {
+      type: String,
+      trim: true,
+    },
+
+    dob: {
+      type: Date,
+      default: null,
+    },
+
+    marital: {
+      type: String,
+      enum: ["single", "married"],
+      default: "single",
+    },
+
+    gender: {
+      type: String,
+      enum: ["male", "female"],
+      default: "male",
+    },
+
     phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    guardianPhone: {
       type: String,
       required: true,
       trim: true,
@@ -58,6 +135,11 @@ const StudentLeadSchema = new Schema<IStudentLead>(
     },
 
     qualification: {
+      type: String,
+      trim: true,
+    },
+
+    address: {
       type: String,
       trim: true,
     },
@@ -118,7 +200,11 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       default: "MEDIUM",
     },
 
-   
+    preferredMode: {
+      type: String,
+      enum: ["online", "offline"],
+      default: "offline",
+    },
 
     notes: {
       type: String,
@@ -130,8 +216,6 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       default: false,
     },
 
-   
-
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "superadmin",
@@ -141,6 +225,10 @@ const StudentLeadSchema = new Schema<IStudentLead>(
     timestamps: true,
   }
 );
+
+/* ---------------------------------- */
+/* Model */
+/* ---------------------------------- */
 
 const StudentLead = mongoose.model<IStudentLead>(
   "StudentLead",
