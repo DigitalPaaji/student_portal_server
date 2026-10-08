@@ -39,6 +39,7 @@ import cors from "cors"
 import path from "path"
 import mongoose from "mongoose";
 import { verifyAuth } from "./helper/verifyRoute";
+import { logoutTeacher } from "./controller/teachers/teacherAuth";
 const app = express()
    
 
@@ -111,6 +112,7 @@ app.use("/api/v1/admin/lead",LeadRoute)
 
 
 app.use("/api/v1/teacher/auth",AuthRoutes)
+
 app.use("/api/v1/teacher/subject",SubjectRoutes)
 app.use("/api/v1/teacher/students",studentsRoutes)
 
