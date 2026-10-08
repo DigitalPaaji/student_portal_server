@@ -13,6 +13,7 @@ import  AdminAuthRoutes from "./routes/admin/AdminAuthRoutes"
 import  teacherRoutes from "./routes/admin/teacherRoutes"
 import  SubjectRoutesadmin from "./routes/admin/subjectRoutes"
 import  studentsRoutesAdmin from "./routes/admin/studentsRoutes"
+import  LeadRoute from "./routes/admin/LeadRoute"
 
 
 
@@ -68,29 +69,25 @@ app.use(cors({
   })) 
   app.use(cookieParser())
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-app.use( 
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"),
- {
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+
+    app.use( "/uploads", express.static(path.join(process.cwd(), "uploads"), {
     maxAge: "7d",              
     etag: true,               
     lastModified: true,        
-    immutable: true            
-  })
-);
+    immutable: true}));
 
-app.get("/ping",async(req:Request,res:Response)=>{
-return res.status(200).send("Pong")
-})
+    app.get("/ping",async(req:Request,res:Response)=>{return res.status(200).send("Pong")})
 
-app.get("/api/v1/routeverify",verifyAuth)
+    app.get("/api/v1/routeverify",verifyAuth)
 
     
 
-//superAdmin  
+//superAdmin 
+
+
 app.use("/api/v1/super/auth",SuperAdminAuthRoutes)
 
 
@@ -107,6 +104,7 @@ app.use("/api/v1/admin/auth",AdminAuthRoutes)
 app.use("/api/v1/admin/teacher",teacherRoutes)
 app.use("/api/v1/admin/subject",SubjectRoutesadmin)
 app.use("/api/v1/admin/students",studentsRoutesAdmin)
+app.use("/api/v1/admin/lead",LeadRoute)
 
 /// teacher ////
 

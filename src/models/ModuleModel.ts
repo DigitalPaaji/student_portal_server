@@ -16,6 +16,8 @@ export interface IModule extends Document {
   order: number;
   level :number;
   createBy: mongoose.Types.ObjectId;
+  assignteacher: mongoose.Types.ObjectId;
+  assignStudent: mongoose.Types.ObjectId[];
   createByModel: "superadmin" | "Teacher";
   answerSubmite: IAnswerSubmit[];
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -110,6 +112,16 @@ const ModuleSchema = new Schema<IModule>(
       enum: ["DRAFT", "PUBLISHED", "ARCHIVED"],
       default: "DRAFT",
     },
+    
+ assignteacher:{
+  type:mongoose.Schema.Types.ObjectId,
+  ref:"Teacher"
+ },
+
+ assignStudent:[{
+ type:mongoose.Schema.Types.ObjectId,
+ ref:"Student"
+ }],
 
     isActive: {
       type: Boolean,

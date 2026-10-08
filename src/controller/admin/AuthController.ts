@@ -100,7 +100,17 @@ return res.status(200).json({success:true,message:"Admin updated"})
 export const getAllAdmin = async(req:Request,res:Response,next:NextFunction)=>{
 try {
 
-  const allAdmin = await SuperAdmin.find().select("-password");
+const accesadmin = req.query.admin
+let allAdmin
+if(accesadmin==="crm"){
+allAdmin = await SuperAdmin.find({access: "crm"}).select("-password");
+}else{
+allAdmin = await SuperAdmin.find({
+    access: { $nin: ["crm"] }
+  }).select("-password");
+}
+
+   
 
   return res.status(200).json({success:true,admin:allAdmin})
 
