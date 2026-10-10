@@ -21,6 +21,7 @@ import  LeadRoute from "./routes/admin/LeadRoute"
 import  AuthRoutes from "./routes/teachers/AuthRoutes"
 import  SubjectRoutes from "./routes/teachers/SubjectRoutes"
 import  studentsRoutes from "./routes/teachers/studentsRoutes"
+import  demoRoutes from "./routes/teachers/demoRoutes"
 
 
 
@@ -112,14 +113,9 @@ app.use("/api/v1/admin/lead",LeadRoute)
 
 
 app.use("/api/v1/teacher/auth",AuthRoutes)
-
 app.use("/api/v1/teacher/subject",SubjectRoutes)
 app.use("/api/v1/teacher/students",studentsRoutes)
-
-
-
-
-
+app.use("/api/v1/teacher/demo",demoRoutes)
 
 
 

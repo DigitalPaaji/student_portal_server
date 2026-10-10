@@ -16,6 +16,7 @@ export interface ITeacher extends Document {
 
   subjects: string[];
   modules: mongoose.Types.ObjectId[];
+  demos: mongoose.Types.ObjectId[];
 
   isVerified: boolean;
   isActive: boolean;
@@ -100,7 +101,12 @@ const teacherSchema = new Schema<ITeacher>(
       type: Boolean,
       default: false,
     },
+     demos:[
+      {type:mongoose.Schema.Types.ObjectId,
+        ref:"StudentLead"
 
+      }
+     ],
     isActive: {
       type: Boolean,
       default: true,

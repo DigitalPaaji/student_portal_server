@@ -3,6 +3,7 @@ import StudentLead from "../../models/LeadModel";
 import mongoose from "mongoose";
 import XLSX from "xlsx";
 import fs from "fs";
+import Teacher from "../../models/teachermodel";
 
 export const createLead = async (
   req: Request,
@@ -29,7 +30,7 @@ export const createLead = async (
       marital,
       gender,
       phone,
-      guardianPhone,
+      guardianphone,
       email,
       qualification,
       address,
@@ -42,11 +43,12 @@ export const createLead = async (
       priority,
       preferredMode,
       notes,
+      demo,
       converted,
     } = req.body;
 
     // Required fields
-    if (!name || !phone || !email || !guardianPhone) {
+    if (!name || !phone || !email || !guardianphone) {
       res.status(400).json({
         success: false,
         message: "Name, phone, email and guardian phone are required",
@@ -54,7 +56,10 @@ export const createLead = async (
       return;
     }
 
-    // Create lead
+   if(demo){
+    demo.status="active"
+   }
+
     const lead = await StudentLead.create({
       name: name.trim(),
 
@@ -67,7 +72,7 @@ export const createLead = async (
       gender: gender || "male",
 
       phone: phone.trim(),
-      guardianPhone: guardianPhone.trim(),
+      guardianPhone: guardianphone.trim(),
 
       email: email.trim().toLowerCase(),
 
@@ -89,9 +94,29 @@ export const createLead = async (
       notes: notes?.trim(),
 
       converted: converted ?? false,
-
+  demo,
       createdBy: _id,
     });
+
+
+
+if(demo){
+ const teacher = await Teacher.findById(demo.assignto)
+ if(!teacher){
+  
+   res.status(200).json({
+      success: true,
+      message: "Lead created successfully",
+      lead,
+    })
+    return
+ }
+    teacher.demos.push(lead._id)
+
+ await teacher.save()
+  
+}
+
 
     res.status(201).json({
       success: true,
@@ -465,11 +490,7 @@ export const importLeadsFromExcel = async (
   }
 };
 
-export const EditLead = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-): Promise<void> => {
+export const EditLead = async (req: Request,res: Response,next: NextFunction,): Promise<void> => {
   try {
     const { access } = req.admin;
 
@@ -494,6 +515,7 @@ export const EditLead = async (
       phone,
       guardianPhone,
       email,
+      demo,
       qualification,
       address,
       city,
@@ -562,6 +584,29 @@ export const EditLead = async (
     lead.notes = notes?.trim();
 
     lead.converted = converted ?? false;
+    
+
+if(demo){
+ const teacher = await Teacher.findById(demo.assignto)
+ if(!teacher){
+  
+   res.status(200).json({
+      success: true,
+      message: "Lead created successfully",
+      lead,
+    })
+    return
+ }
+ if(!teacher.demos.includes(lead._id)){
+  teacher.demos.push(lead._id)
+
+ await teacher.save()
+ }
+  demo.status="active"
+ lead.demo=demo  
+}
+
+
 
     await lead.save();
 
@@ -661,5 +706,17 @@ return res.status(200).json({success:true,message:"delete"})
 
 } catch (error) {
     next(error)
+}
+}
+
+
+
+export const getTeacher= async( req: Request,res: Response,next: NextFunction)=>{
+try {
+  const teachers = await Teacher.find().select("fullname email")
+
+return res.status(200).json({teachers})
+} catch (error) {
+  next(error)
 }
 }

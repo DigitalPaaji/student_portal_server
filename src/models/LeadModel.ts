@@ -2,14 +2,7 @@ import mongoose, { Document, Schema } from "mongoose";
 
 
 
-export type LeadStatus =
-  | "NEW"
-  | "CONTACTED"
-  | "INTERESTED"
-  | "FOLLOW_UP"
-  | "CONVERTED"
-  | "NOT_INTERESTED"
-  | "LOST";
+export type LeadStatus =  "NEW" | "COUNSELING" |"DEMO" |"DEMODONE"| "CONVERTED" | "ACTIVE" | "INACTIVE"  | "NOT_INTERESTED";
 
 export type LeadPriority = "LOW" | "MEDIUM" | "HIGH";
 
@@ -33,6 +26,14 @@ export type PreferredMode = "online" | "offline";
 /* ---------------------------------- */
 /* Student Lead Interface */
 /* ---------------------------------- */
+
+interface IDemo {
+assignto:mongoose.Types.ObjectId;
+status:"active" | "done";
+demodate:Date,
+note:String
+}
+
 
 export interface IStudentLead extends Document {
   name: string;
@@ -68,9 +69,9 @@ export interface IStudentLead extends Document {
   preferredMode: PreferredMode;
 
   notes?: string;
-
+  
   converted: boolean;
-
+demo:IDemo;
   createdBy?: mongoose.Types.ObjectId;
 
   createdAt: Date;
@@ -163,6 +164,27 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       type: String,
       trim: true,
     },
+   demo :{
+    assignto :{
+      type:mongoose.Schema.Types.ObjectId,
+       ref:"Teacher"
+       },
+    status:{
+      type:String,
+      enum:["active","done"],
+      default:"active"
+    },
+    demodate:{
+      type:Date,
+   
+     },
+      note:{
+        type:String
+      }
+
+   },
+
+   
 
     source: {
       type: String,
@@ -184,12 +206,14 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       type: String,
       enum: [
         "NEW",
-        "CONTACTED",
-        "INTERESTED",
-        "FOLLOW_UP",
+        "COUNSELING",
+        "DEMO",
+        "DEMODONE",
         "CONVERTED",
+        "ACTIVE",
+        "INACTIVE",
         "NOT_INTERESTED",
-        "LOST",
+      
       ],
       default: "NEW",
     },
@@ -205,6 +229,7 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       enum: ["online", "offline"],
       default: "offline",
     },
+
 
     notes: {
       type: String,
