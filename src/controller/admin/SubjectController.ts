@@ -157,30 +157,31 @@ export const AddnewModules = async (req:Request,res:Response,next:NextFunction) 
 
       
     const { title,description,content,status,subjectId,assignteacher,level,assignStudent}=req.body;
+    
     const Admin = req.admin
-     if (!Admin?._id) {
+    if (!Admin?._id) {
       return res.status(401).json({
         success: false,
         message: "Admin not authenticated",
       });
     }
-      if (!title || !subjectId) {
+    if (!title || !subjectId) {
       return res.status(400).json({
         success: false,
         message: "Title and subjectId are required",
       });
     }    
     const slug = `${createSlug(title)}-${Date.now()}`;
-const subject = await Subject.findById(subjectId)
-if (!subject) {
-  return res.status(404).json({
-    success: false,
-    message: "Subject not found",
-  });
-}
-
-
- const newmodule = await ModuleModel.create({
+    const subject = await Subject.findById(subjectId)
+    if (!subject) {
+      return res.status(404).json({
+        success: false,
+        message: "Subject not found",
+      });
+    }
+    
+    
+    const newmodule = await ModuleModel.create({
       subjectId,
       title,
       slug,
@@ -194,12 +195,13 @@ if (!subject) {
       status: status || "DRAFT",
     });
     
-
-
-       subject.subjectmodules.push(newmodule._id);
     
- await subject.save()
-
+    
+    subject.subjectmodules.push(newmodule._id);
+    
+    await subject.save()
+    
+   
 
  return res.status(201).json({
       success: true,
@@ -257,8 +259,8 @@ try {
 
 const moduleId = req.params.id;
 
- const {title,description,content,status} = req.body
-
+ const {title,description,content,status,assignteacher,level,assignStudent} = req.body
+    
     const module = await ModuleModel.findById(moduleId)
     if(!module){
      return res.status(404).json({
@@ -270,6 +272,9 @@ module.title= title
 module.description= description
 module.content= content
 module.status= status 
+module.assignteacher= assignteacher 
+module.level= level 
+module.assignStudent= assignStudent 
 
  await module.save();
 

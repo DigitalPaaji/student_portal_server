@@ -115,7 +115,8 @@ const ModuleSchema = new Schema<IModule>(
     
  assignteacher:{
   type:mongoose.Schema.Types.ObjectId,
-  ref:"Teacher"
+  ref:"Teacher",
+  default:null
  },
 
  assignStudent:[{
