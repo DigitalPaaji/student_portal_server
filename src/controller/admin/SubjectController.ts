@@ -156,8 +156,8 @@ export const AddnewModules = async (req:Request,res:Response,next:NextFunction) 
 
 
       
-         const { title,description,content,status,subjectId}=req.body;
-         const Admin = req.admin
+    const { title,description,content,status,subjectId,assignteacher,level,assignStudent}=req.body;
+    const Admin = req.admin
      if (!Admin?._id) {
       return res.status(401).json({
         success: false,
@@ -186,6 +186,9 @@ if (!subject) {
       slug,
       description,
       content,
+      assignteacher,
+      assignStudent:assignStudent,
+      level:level,
       createBy: Admin._id,
       createByModel:"superadmin",
       status: status || "DRAFT",

@@ -7,12 +7,14 @@ import { sendOtpMail } from "../../helper/sendOtpMail";
 import { emailQueue } from "../../queues/emailQueue";
   
 
+
 export const createSuperAdmin = async(req:Request,res:Response,next:NextFunction)=>{
     try {
     const name = req.body.name?.trim();
     const email = req.body.email?.trim().toLowerCase();
     const password = req.body.password;
     const access = req.body.access || [ ]
+    const leadaccess = req.body.leadaccess || [ ]
     if (!name || !email || !password) {
       res.status(400).json({
         success: false,
@@ -58,7 +60,7 @@ const existingSuperAdmin = await SuperAdmin.findOne({email})
 
     const hashpass = await bcrypt.hash(password,10)
 
-  const superAdmin = await SuperAdmin.create({ name,email,password:hashpass,access});
+  const superAdmin = await SuperAdmin.create({ name,email,password:hashpass,access,leadaccess});
 
 await emailQueue.add("sendWelcomeEmail", {
       targetEmail: email.toLowerCase(),
@@ -75,16 +77,19 @@ await emailQueue.add("sendWelcomeEmail", {
     }
 }
 
+
+
 export const EditAdmin = async(req:Request,res:Response,next:NextFunction)=>{
   try {
 const adminId = req.params.id;
-const {name,access} = req.body;
+const {name,access,leadaccess} = req.body;
 const admin = await SuperAdmin.findById(adminId)
 if(!admin){
   return res.status(401).json({success:false,message:"admin not found"})
 }
  admin.name = name ? name : admin.name
  admin.access = access
+ admin.leadaccess = leadaccess
 await admin.save()
 
 return res.status(200).json({success:true,message:"Admin updated"})
@@ -125,7 +130,6 @@ try {
 const adminId = req.params.id
 
   const allAdmin = await SuperAdmin.findById(adminId).select("-password");
-
   return res.status(200).json({success:true,admin:allAdmin})
 
 } catch (error) {

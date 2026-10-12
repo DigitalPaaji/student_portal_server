@@ -620,28 +620,50 @@ if(demo){
   }
 };
 
-export const GetAllLeads = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const GetAllLeads = async (req: Request,res: Response,next: NextFunction,) => {
   try {
+
+ const { leadaccess = [] } = req.admin;
+
+   
+
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const skip = limit * (page - 1);
 
+    
     const status = req.query.status || "";
     const source = req.query.source || "";
 
-    const filters: any = {};
+  
 
-    if (status) {
-      filters.status = status;
-    }
+    // Map lead access permissions to database statuses
+    const accessStatusMap: Record<string, string> = {
+      newlead: "NEW",
+      demolead: "DEMO",
+      demodonelead: "DEMODONE",
+      activelead: "ACTIVE",
+      inactivelead: "INACTIVE",
+      convertedlead: "CONVERTED",
+      notinterestedlead: "NOT_INTERESTED",
+    };
+
+
+     const allowedStatuses = leadaccess
+      .map((access: string) => accessStatusMap[access])
+      .filter(Boolean);
+
+    const filters: any = {
+      status: { $in: leadaccess },
+    };
 
     if (source) {
       filters.source = source;
     }
+    
+if(status){
+  filters.status=status
+}
 
     const [leads, totalCount] = await Promise.all([
       StudentLead.find(filters)

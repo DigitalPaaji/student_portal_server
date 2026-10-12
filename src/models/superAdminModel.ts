@@ -6,6 +6,7 @@ interface ISuperAdmin extends Document{
     email:string;
     password:string;
     access:string[];
+    leadaccess:string[];
 }
 
 
@@ -24,7 +25,13 @@ const superAdminSchema= new Schema<ISuperAdmin>({
         type:String,
         required:true,
     },
-    access:[{type:String}]
+    access:{
+  type: [String],
+  default: []},
+   leadaccess: {
+  type: [String],
+  default: [],
+},
 
 },{timestamps:true})
 

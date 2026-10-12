@@ -108,7 +108,11 @@ app.use("/api/v1/admin/subject",SubjectRoutesadmin)
 app.use("/api/v1/admin/students",studentsRoutesAdmin)
 app.use("/api/v1/admin/lead",LeadRoute)
 
-/// teacher ////
+
+
+
+///  teacher ////
+
 
 
 
