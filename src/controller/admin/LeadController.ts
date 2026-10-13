@@ -544,7 +544,8 @@ export const importLeadsFromExcel = async (
       newLeads.push(lead);
     }
 
-    // Insert new leads
+    
+    
     let importedCount = 0;
 
     if (newLeads.length) {
@@ -746,6 +747,7 @@ export const GetAllLeads = async (req: Request,res: Response,next: NextFunction,
     
     const status = req.query.status || "";
     const source = req.query.source || "";
+    const search = req.query.search || "";
 
   
 
@@ -776,7 +778,11 @@ export const GetAllLeads = async (req: Request,res: Response,next: NextFunction,
 if(status){
   filters.status=status
 }
-
+if (search) {
+  filters.$or = [
+    { name: { $regex: search, $options: "i" } },
+  ];
+}
     const [leads, totalCount] = await Promise.all([
       StudentLead.find(filters)
         .skip(skip)

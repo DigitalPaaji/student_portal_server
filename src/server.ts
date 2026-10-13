@@ -17,7 +17,6 @@ import  LeadRoute from "./routes/admin/LeadRoute"
 
 
 
-
 import  AuthRoutes from "./routes/teachers/AuthRoutes"
 import  SubjectRoutes from "./routes/teachers/SubjectRoutes"
 import  studentsRoutes from "./routes/teachers/studentsRoutes"
