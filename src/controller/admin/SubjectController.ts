@@ -246,6 +246,43 @@ return res.status(200).json({success:true,modules})
     }
 }
 
+
+export const getModulesCompleted = async(req:Request,res:Response,next:NextFunction)=>{
+    try {
+
+ const {access} = req.admin;
+
+    if(!access.includes("getmodule")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
+//   const subjectId = req.params.id;
+
+//  const modules = await ModuleModel.find({subjectId});
+
+
+const modules = await ModuleModel.find({moduleCompleted:true}).sort({moduleCompletedDate:1}).populate("subjectId ");
+
+
+
+return res.status(200).json({success:true,modules})
+
+
+
+        
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+
+
+
+
+
 export const updateModules = async(req:Request,res:Response,next:NextFunction)=>{
 try {
 

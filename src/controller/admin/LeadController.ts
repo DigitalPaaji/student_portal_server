@@ -246,6 +246,7 @@ const parseEnum = <T extends string>(
 /* Controller                         */
 /* ---------------------------------- */
 
+
 export const importLeadsFromExcel = async (
   req: Request,
   res: Response,
@@ -273,10 +274,10 @@ export const importLeadsFromExcel = async (
 
     filePath = req.file.path;
 
-    // cellDates -> real Date objects for date cells
     const workbook = XLSX.readFile(filePath, { cellDates: true });
 
     const sheetName = workbook.SheetNames[0];
+
     if (!sheetName) {
       return res.status(400).json({
         success: false,
@@ -297,70 +298,113 @@ export const importLeadsFromExcel = async (
     }
 
     const validLeads: any[] = [];
-    const errors: { row: number; field: string; message: string }[] = [];
+
+    const errors: {
+      row: number;
+      field: string;
+      message: string;
+    }[] = [];
+
     const phonesInFile = new Set<string>();
 
-    /* ---------- Row processing ---------- */
+    // Process Excel rows
     for (let i = 0; i < rawRows.length; i++) {
       const row = normalizeRow(rawRows[i]);
-      const excelRow = i + 2; // header is row 1
-      const rowErrors: { row: number; field: string; message: string }[] = [];
+      const excelRow = i + 2;
+
+      const rowErrors: {
+        row: number;
+        field: string;
+        message: string;
+      }[] = [];
 
       const addError = (field: string, message: string) =>
-        rowErrors.push({ row: excelRow, field, message });
+        rowErrors.push({
+          row: excelRow,
+          field,
+          message,
+        });
 
       const name = str(row.name);
       const phone = cleanPhone(row.phone);
       const guardianPhone = cleanPhone(row.guardianphone);
       const email = str(row.email)?.toLowerCase();
 
-      // Required
-      if (!name) addError("name", "Name is required");
+      // Required: Name
+      if (!name) {
+        addError("name", "Name is required");
+      }
 
-      if (!phone) addError("phone", "Phone is required");
-      else if (!/^[0-9]{10}$/.test(phone))
+      // Required: Phone
+      if (!phone) {
+        addError("phone", "Phone is required");
+      } else if (!/^[0-9]{10}$/.test(phone)) {
         addError("phone", "Phone must contain exactly 10 digits");
-      else if (phonesInFile.has(phone))
+      } else if (phonesInFile.has(phone)) {
         addError("phone", "Duplicate phone number in Excel");
+      }
 
-      if (!guardianPhone)
+      // Required: Guardian phone
+      if (!guardianPhone) {
         addError("guardianphone", "Guardian phone is required");
-      else if (!/^[0-9]{10}$/.test(guardianPhone))
+      } else if (!/^[0-9]{10}$/.test(guardianPhone)) {
         addError(
           "guardianphone",
           "Guardian phone must contain exactly 10 digits",
         );
+      }
 
       // Optional email
-      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      if (
+        email &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ) {
         addError("email", "Invalid email");
+      }
 
-      // DOB
-      const dob = parseDate(row.dob);
-      if (dob === null) addError("dob", "Invalid date of birth");
+      // Optional DOB
+      const dobValue = str(row.dob);
+      const dob = dobValue ? parseDate(row.dob) : null;
 
-      // Enums (accept "martial" header as legacy alias for "marital")
+      if (dobValue && dob === null) {
+        addError("dob", "Invalid date of birth");
+      }
+
+      // Optional enums with defaults
       const marital = parseEnum(
         row.marital ?? row.martial,
         MARITAL,
         "single",
         false,
       );
-      if (!marital)
-        addError("marital", `Must be one of: ${MARITAL.join(", ")}`);
 
-      const gender = parseEnum(row.gender, GENDERS, "male", false);
-      if (!gender) addError("gender", `Must be one of: ${GENDERS.join(", ")}`);
+      const gender = parseEnum(
+        row.gender,
+        GENDERS,
+        "male",
+        false,
+      );
 
-      const source = parseEnum(row.source, SOURCES, "OTHER", true);
-      if (!source) addError("source", `Must be one of: ${SOURCES.join(", ")}`);
+      const source = parseEnum(
+        row.source,
+        SOURCES,
+        "OTHER",
+        true,
+      );
 
-      const status = parseEnum(row.status, STATUSES, "NEW", true);
-      if (!status) addError("status", `Must be one of: ${STATUSES.join(", ")}`);
+      const status = parseEnum(
+        row.status,
+        STATUSES,
+        "NEW",
+        true,
+      );
 
-      const priority = parseEnum(row.priority, PRIORITIES, "MEDIUM", true);
-      if (!priority)
-        addError("priority", `Must be one of: ${PRIORITIES.join(", ")}`);
+      const priority = parseEnum(
+        row.priority,
+        PRIORITIES,
+        "MEDIUM",
+        true,
+      );
 
       const preferredMode = parseEnum(
         row.preferredmode,
@@ -368,9 +412,51 @@ export const importLeadsFromExcel = async (
         "offline",
         false,
       );
-      if (!preferredMode)
-        addError("preferredmode", `Must be one of: ${MODES.join(", ")}`);
 
+      // Validate enum values only when provided
+      if (str(row.marital ?? row.martial) && !marital) {
+        addError(
+          "marital",
+          `Must be one of: ${MARITAL.join(", ")}`,
+        );
+      }
+
+      if (str(row.gender) && !gender) {
+        addError(
+          "gender",
+          `Must be one of: ${GENDERS.join(", ")}`,
+        );
+      }
+
+      if (str(row.source) && !source) {
+        addError(
+          "source",
+          `Must be one of: ${SOURCES.join(", ")}`,
+        );
+      }
+
+      if (str(row.status) && !status) {
+        addError(
+          "status",
+          `Must be one of: ${STATUSES.join(", ")}`,
+        );
+      }
+
+      if (str(row.priority) && !priority) {
+        addError(
+          "priority",
+          `Must be one of: ${PRIORITIES.join(", ")}`,
+        );
+      }
+
+      if (str(row.preferredmode) && !preferredMode) {
+        addError(
+          "preferredmode",
+          `Must be one of: ${MODES.join(", ")}`,
+        );
+      }
+
+      // Skip invalid rows
       if (rowErrors.length) {
         errors.push(...rowErrors);
         continue;
@@ -380,16 +466,17 @@ export const importLeadsFromExcel = async (
 
       validLeads.push({
         name,
+
         father: str(row.father),
         mother: str(row.mother),
-        dob: dob ?? null,
+        dob: dob ?? undefined,
 
         marital,
         gender,
 
         phone,
         guardianPhone,
-        email,
+        email: email || undefined,
 
         qualification: str(row.qualification),
 
@@ -407,14 +494,19 @@ export const importLeadsFromExcel = async (
 
         notes: str(row.notes),
 
-        converted: parseBoolean(row.converted) || status === "CONVERTED",
+        converted:
+          parseBoolean(row.converted) || status === "CONVERTED",
 
         createdBy: _id,
-        _excelRow: excelRow, // temp, removed before insert
+
+        _excelRow: excelRow,
       });
     }
 
+    // No valid rows
     if (!validLeads.length) {
+      errors.sort((a, b) => a.row - b.row);
+
       return res.status(400).json({
         success: false,
         message: "No valid leads found",
@@ -425,12 +517,16 @@ export const importLeadsFromExcel = async (
       });
     }
 
-    /* ---------- Check existing phones in DB ---------- */
+    // Check existing phone numbers in database
     const existingLeads = await StudentLead.find({
-      phone: { $in: validLeads.map((l) => l.phone) },
+      phone: {
+        $in: validLeads.map((lead) => lead.phone),
+      },
     }).select("phone");
 
-    const existingPhones = new Set(existingLeads.map((l) => l.phone));
+    const existingPhones = new Set(
+      existingLeads.map((lead) => lead.phone),
+    );
 
     const newLeads: any[] = [];
 
@@ -441,22 +537,37 @@ export const importLeadsFromExcel = async (
           field: "phone",
           message: "Lead already exists",
         });
+
         continue;
       }
+
       newLeads.push(lead);
     }
 
-    /* ---------- Insert ---------- */
+    // Insert new leads
     let importedCount = 0;
 
     if (newLeads.length) {
-      const inserted = await StudentLead.insertMany(newLeads, {
-        ordered: false,
-      });
-      importedCount = inserted.length;
+      try {
+        const inserted = await StudentLead.insertMany(newLeads, {
+          ordered: false,
+        });
+
+        importedCount = inserted.length;
+      } catch (error: any) {
+        // Handle partial insertion errors
+        if (error.insertedDocs) {
+          importedCount = error.insertedDocs.length;
+        }
+
+        // If no documents were inserted, rethrow
+        if (!importedCount) {
+          throw error;
+        }
+      }
     }
 
-    // Keep errors sorted by row
+    // Sort errors by Excel row
     errors.sort((a, b) => a.row - b.row);
 
     if (importedCount === 0) {
@@ -490,18 +601,19 @@ export const importLeadsFromExcel = async (
   }
 };
 
+
 export const EditLead = async (req: Request,res: Response,next: NextFunction,): Promise<void> => {
   try {
-    const { access } = req.admin;
+    // const { access } = req.admin;
 
     // Check CRM access
-    if (!access.includes("crm")) {
-      res.status(401).json({
-        success: false,
-        message: "You don't have access",
-      });
-      return;
-    }
+    // if (!access.includes("crm")) {
+    //   res.status(401).json({
+    //     success: false,
+    //     message: "You don't have access",
+    //   });
+    //   return;
+    // }
 
     const { id } = req.params;
 

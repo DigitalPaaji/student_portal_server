@@ -22,6 +22,9 @@ export interface IModule extends Document {
   answerSubmite: IAnswerSubmit[];
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
   isActive: boolean;
+  moduleCompleted: boolean;
+  moduleCompletedDate: Date;
+
   createdAt: Date;
   updatedAt: Date;
 
@@ -59,11 +62,11 @@ const ModuleSchema = new Schema<IModule>(
       required: true,
       index: true,
     },
-  level:{
+   level:{
     type:Number,
     default:1
-  },
-    title: {
+     },
+   title: {
       type: String,
       required: true,
       trim: true, 
@@ -113,7 +116,7 @@ const ModuleSchema = new Schema<IModule>(
       default: "DRAFT",
     },
     
- assignteacher:{
+    assignteacher:{
   type:mongoose.Schema.Types.ObjectId,
   ref:"Teacher",
   default:null
@@ -128,6 +131,16 @@ const ModuleSchema = new Schema<IModule>(
       type: Boolean,
       default: true,
     },
+moduleCompleted:{
+  type:Boolean,
+  default:false,
+},
+moduleCompletedDate:{
+  type:Date,
+
+}
+
+
   },
   {
     timestamps: true,

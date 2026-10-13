@@ -1,5 +1,5 @@
 import express from "express"
-import { AddnewModules, CreateSubject, deleteModules, deleteSubject, EditSubject, getModules, getSubject, ModuleCompleted, updateModules } from "../../controller/teachers/subjectController"
+import { AddnewModules, completedModule, CreateSubject, deleteModules, deleteSubject, EditSubject, getModules, getSubject, ModuleCompleted, updateModules } from "../../controller/teachers/subjectController"
 import { verifyTeacher } from "../../helper/verifyTeacher"
 import { addQuestions, deleteQuestion, getQuestion, UpdateQuestion } from "../../controller/admin/SubjectController"
 
@@ -16,6 +16,7 @@ routes.delete("/delete/:id",verifyTeacher, deleteSubject)
 
 routes.post("/modules/create",verifyTeacher,AddnewModules)
 routes.get("/modules/get/:id",verifyTeacher,getModules)
+routes.get("/modules/teacher/complete/:id",verifyTeacher,completedModule)
 routes.put("/modules/update/:id",verifyTeacher,updateModules)
 routes.delete("/modules/delete/:id",verifyTeacher,deleteModules)
 routes.post("/modules/complete/:id",verifyTeacher,ModuleCompleted)

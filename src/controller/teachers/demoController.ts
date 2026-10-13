@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import StudentLead from "../../models/LeadModel";
 import Teacher from "../../models/teachermodel";
 
+
 export const GetDemos = async(req:Request,res:Response,next:NextFunction)=>{
 try {
       const teacher = req.teacher;
@@ -38,11 +39,13 @@ return res.status(200).json({
 }
 }
 
+
+
 export const getLead = async(req:Request,res:Response,next:NextFunction)=>{
   try {
   const leadId = req.params.id;
 
-  const lead = await StudentLead.findById(leadId);
+  const lead = await StudentLead.findById(leadId).select("name marital gender email qualification course interestedCourse demo priority preferredMode notes");
 
 
 
@@ -56,6 +59,8 @@ export const getLead = async(req:Request,res:Response,next:NextFunction)=>{
     next(error)
   }
 }
+
+
 
 export const demoSubmit= async(req:Request,res:Response,next:NextFunction)=>{
   try {

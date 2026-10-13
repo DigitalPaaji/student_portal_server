@@ -170,7 +170,11 @@ const subject = await Subject.findById(subjectId)
 
 export const getModules = async(req:Request,res:Response,next:NextFunction)=>{
     try {
-  const subjectId = req.params.id;
+
+  const subjectId  = req.params.id;
+  const teacher =   req.teacher;
+
+
 
 const subject = await Subject.findById(subjectId);
 
@@ -178,7 +182,8 @@ if(!subject){
   return res.status(401).json({success:false,message:"Subject not found"})
 }
 
- const modules = await ModuleModel.find({subjectId});
+const modules = await ModuleModel.find({subjectId,assignteacher:teacher?._id});
+
 
 return res.status(200).json({success:true,modules,subject})
 
@@ -188,6 +193,28 @@ return res.status(200).json({success:true,modules,subject})
     } catch (error) {
         next(error)
     }
+}
+
+export const completedModule = async(req:Request,res:Response,next:NextFunction)=>{
+  try {
+      const modulteId = req.params.id;
+      const  findmodule = await ModuleModel.findById(modulteId);
+      
+      if(!findmodule){return res.status(400).json({success:false,message:"Module Not Found"})}
+      
+
+
+      findmodule.moduleCompleted=true;
+      findmodule.moduleCompletedDate= new Date(Date.now());
+      
+      await findmodule.save()
+   
+      return res.status(200).json({success:true,message:"Module compleated"})
+
+    
+  } catch (error) {
+    next(error)
+  }
 }
 
 export const updateModules = async(req:Request,res:Response,next:NextFunction)=>{
@@ -364,9 +391,7 @@ export const ModuleCompleted = async (
     const subjectId = req.params.id;
     const { moduleId } = req.body;
 
-    // -----------------------------
-    // Validate IDs
-    // -----------------------------
+  
 
     if (
       !mongoose.Types.ObjectId.isValid(subjectId as any) ||
@@ -418,9 +443,7 @@ export const ModuleCompleted = async (
       });
     }
 
-    // -----------------------------
-    // Check already completed
-    // -----------------------------
+   
 
     const alreadyCompleted = subject.completemodule.some(
       (id: mongoose.Types.ObjectId) => id.toString() === moduleId
@@ -433,9 +456,7 @@ export const ModuleCompleted = async (
       });
     }
 
-    // -----------------------------
-    // Check module content
-    // -----------------------------
+
 
     if (!moduleExist.content || moduleExist.content.trim().length < 50) {
       return res.status(400).json({
