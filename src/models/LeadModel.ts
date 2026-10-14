@@ -125,7 +125,6 @@ const StudentLeadSchema = new Schema<IStudentLead>(
 
     guardianPhone: {
       type: String,
-      required: true,
       trim: true,
     },
 
