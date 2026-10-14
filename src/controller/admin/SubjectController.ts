@@ -234,9 +234,9 @@ export const getModules = async(req:Request,res:Response,next:NextFunction)=>{
 
   const subjectId = req.params.id;
 
- const modules = await ModuleModel.find({subjectId});
+ const modules = await Subject.findById(subjectId).populate("subjectmodules");
 
-return res.status(200).json({success:true,modules})
+return res.status(200).json({success:true,modules:modules.subjectmodules})
 
 
 
@@ -316,6 +316,68 @@ module.assignStudent= assignStudent
       success: true,
       message: "Module updated successfully",
       module,
+    });
+} catch (error) {
+    next(error)
+}
+}
+export const updaterecoderModules = async(req:Request,res:Response,next:NextFunction)=>{
+try {
+
+ const {access} = req.admin;
+
+    if(!access.includes("editmodule")){
+  return res.status(401).json({
+    success:false,message:"you don`t have access"
+  })
+}
+
+
+
+ const {subjectId,modules} = req.body
+    
+  if (!mongoose.Types.ObjectId.isValid(subjectId)) {
+      res.status(400).json({
+        success: false,
+        message: "Invalid subject ID",
+      });
+      return;
+    }
+
+   if (!Array.isArray(modules)) {
+      res.status(400).json({
+        success: false,
+        message: "Modules must be an array",
+      });
+      return;
+    }
+
+const subject = await Subject.findById(subjectId);
+if (!subject) {
+      res.status(404).json({
+        success: false,
+        message: "Subject not found",
+      });
+      return;
+    }
+     
+
+  
+
+   
+
+   
+
+    // Persist the new order in subjectmodules
+    subject.subjectmodules = modules.map(
+      (id: string) => new mongoose.Types.ObjectId(id)
+    );
+
+    await subject.save();
+    return res.status(200).json({
+      success: true,
+      message: "Module updated successfully",
+     
     });
 } catch (error) {
     next(error)
