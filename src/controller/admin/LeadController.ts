@@ -11,10 +11,10 @@ export const createLead = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const { access, _id } = req.admin;
+    const { access,leadaccess, _id } = req.admin;
 
     // Check CRM access
-    if (!access.includes("crm")) {
+    if (!leadaccess.includes("createlead")) {
       res.status(401).json({
         success: false,
         message: "You don't have access",
@@ -48,7 +48,7 @@ export const createLead = async (
     } = req.body;
 
     // Required fields
-    if (!name || !phone ) {
+    if (!name || !phone) {
       res.status(400).json({
         success: false,
         message: "Name and phone are required",
@@ -56,9 +56,9 @@ export const createLead = async (
       return;
     }
 
-   if(demo){
-    demo.status="active"
-   }
+    if (demo) {
+      demo.status = "active";
+    }
 
     const lead = await StudentLead.create({
       name: name.trim(),
@@ -94,29 +94,24 @@ export const createLead = async (
       notes: notes?.trim(),
 
       converted: converted ?? false,
-  demo,
+      demo,
       createdBy: _id,
     });
 
+    if (demo) {
+      const teacher = await Teacher.findById(demo.assignto);
+      if (!teacher) {
+        res.status(200).json({
+          success: true,
+          message: "Lead created successfully",
+          lead,
+        });
+        return;
+      }
+      teacher.demos.push(lead._id);
 
-
-if(demo){
- const teacher = await Teacher.findById(demo.assignto)
- if(!teacher){
-  
-   res.status(200).json({
-      success: true,
-      message: "Lead created successfully",
-      lead,
-    })
-    return
- }
-    teacher.demos.push(lead._id)
-
- await teacher.save()
-  
-}
-
+      await teacher.save();
+    }
 
     res.status(201).json({
       success: true,
@@ -246,7 +241,6 @@ const parseEnum = <T extends string>(
 /* Controller                         */
 /* ---------------------------------- */
 
-
 export const importLeadsFromExcel = async (
   req: Request,
   res: Response,
@@ -255,10 +249,10 @@ export const importLeadsFromExcel = async (
   let filePath = "";
 
   try {
-    const { access, _id } = req.admin;
+    const { access,leadaccess, _id } = req.admin;
 
     // CRM permission
-    if (!access.includes("crm")) {
+    if (!leadaccess.includes("createlead")) {
       return res.status(403).json({
         success: false,
         message: "You don't have CRM access",
@@ -355,10 +349,7 @@ export const importLeadsFromExcel = async (
       }
 
       // Optional email
-      if (
-        email &&
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-      ) {
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         addError("email", "Invalid email");
       }
 
@@ -378,33 +369,13 @@ export const importLeadsFromExcel = async (
         false,
       );
 
-      const gender = parseEnum(
-        row.gender,
-        GENDERS,
-        "male",
-        false,
-      );
+      const gender = parseEnum(row.gender, GENDERS, "male", false);
 
-      const source = parseEnum(
-        row.source,
-        SOURCES,
-        "OTHER",
-        true,
-      );
+      const source = parseEnum(row.source, SOURCES, "OTHER", true);
 
-      const status = parseEnum(
-        row.status,
-        STATUSES,
-        "NEW",
-        true,
-      );
+      const status = parseEnum(row.status, STATUSES, "NEW", true);
 
-      const priority = parseEnum(
-        row.priority,
-        PRIORITIES,
-        "MEDIUM",
-        true,
-      );
+      const priority = parseEnum(row.priority, PRIORITIES, "MEDIUM", true);
 
       const preferredMode = parseEnum(
         row.preferredmode,
@@ -415,45 +386,27 @@ export const importLeadsFromExcel = async (
 
       // Validate enum values only when provided
       if (str(row.marital ?? row.martial) && !marital) {
-        addError(
-          "marital",
-          `Must be one of: ${MARITAL.join(", ")}`,
-        );
+        addError("marital", `Must be one of: ${MARITAL.join(", ")}`);
       }
 
       if (str(row.gender) && !gender) {
-        addError(
-          "gender",
-          `Must be one of: ${GENDERS.join(", ")}`,
-        );
+        addError("gender", `Must be one of: ${GENDERS.join(", ")}`);
       }
 
       if (str(row.source) && !source) {
-        addError(
-          "source",
-          `Must be one of: ${SOURCES.join(", ")}`,
-        );
+        addError("source", `Must be one of: ${SOURCES.join(", ")}`);
       }
 
       if (str(row.status) && !status) {
-        addError(
-          "status",
-          `Must be one of: ${STATUSES.join(", ")}`,
-        );
+        addError("status", `Must be one of: ${STATUSES.join(", ")}`);
       }
 
       if (str(row.priority) && !priority) {
-        addError(
-          "priority",
-          `Must be one of: ${PRIORITIES.join(", ")}`,
-        );
+        addError("priority", `Must be one of: ${PRIORITIES.join(", ")}`);
       }
 
       if (str(row.preferredmode) && !preferredMode) {
-        addError(
-          "preferredmode",
-          `Must be one of: ${MODES.join(", ")}`,
-        );
+        addError("preferredmode", `Must be one of: ${MODES.join(", ")}`);
       }
 
       // Skip invalid rows
@@ -494,8 +447,7 @@ export const importLeadsFromExcel = async (
 
         notes: str(row.notes),
 
-        converted:
-          parseBoolean(row.converted) || status === "CONVERTED",
+        converted: parseBoolean(row.converted) || status === "CONVERTED",
 
         createdBy: _id,
 
@@ -524,9 +476,7 @@ export const importLeadsFromExcel = async (
       },
     }).select("phone");
 
-    const existingPhones = new Set(
-      existingLeads.map((lead) => lead.phone),
-    );
+    const existingPhones = new Set(existingLeads.map((lead) => lead.phone));
 
     const newLeads: any[] = [];
 
@@ -544,8 +494,6 @@ export const importLeadsFromExcel = async (
       newLeads.push(lead);
     }
 
-    
-    
     let importedCount = 0;
 
     if (newLeads.length) {
@@ -602,8 +550,11 @@ export const importLeadsFromExcel = async (
   }
 };
 
-
-export const EditLead = async (req: Request,res: Response,next: NextFunction,): Promise<void> => {
+export const EditLead = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
   try {
     // const { access } = req.admin;
 
@@ -644,7 +595,7 @@ export const EditLead = async (req: Request,res: Response,next: NextFunction,): 
     } = req.body;
 
     // Required fields
-    if (!name || !phone ) {
+    if (!name || !phone) {
       res.status(400).json({
         success: false,
         message: "Name and phone are required",
@@ -697,29 +648,25 @@ export const EditLead = async (req: Request,res: Response,next: NextFunction,): 
     lead.notes = notes?.trim();
 
     lead.converted = converted ?? false;
-    
 
-if(demo){
- const teacher = await Teacher.findById(demo.assignto)
- if(!teacher){
-  
-   res.status(200).json({
-      success: true,
-      message: "Lead created successfully",
-      lead,
-    })
-    return
- }
- if(!teacher.demos.includes(lead._id)){
-  teacher.demos.push(lead._id)
+    if (demo) {
+      const teacher = await Teacher.findById(demo.assignto);
+      if (!teacher) {
+        res.status(200).json({
+          success: true,
+          message: "Lead created successfully",
+          lead,
+        });
+        return;
+      }
+      if (!teacher.demos.includes(lead._id)) {
+        teacher.demos.push(lead._id);
 
- await teacher.save()
- }
-  demo.status="active"
- lead.demo=demo  
-}
-
-
+        await teacher.save();
+      }
+      demo.status = "active";
+      lead.demo = demo;
+    }
 
     await lead.save();
 
@@ -733,23 +680,21 @@ if(demo){
   }
 };
 
-export const GetAllLeads = async (req: Request,res: Response,next: NextFunction,) => {
+export const GetAllLeads = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
-
- const { leadaccess = [] } = req.admin;
-
-   
+    const { leadaccess = [] } = req.admin;
 
     const page = Number(req.query.page) || 1;
     const limit = Number(req.query.limit) || 20;
     const skip = limit * (page - 1);
 
-    
     const status = req.query.status || "";
     const source = req.query.source || "";
     const search = req.query.search || "";
-
-  
 
     // Map lead access permissions to database statuses
     const accessStatusMap: Record<string, string> = {
@@ -762,8 +707,7 @@ export const GetAllLeads = async (req: Request,res: Response,next: NextFunction,
       notinterestedlead: "NOT_INTERESTED",
     };
 
-
-     const allowedStatuses = leadaccess
+    const allowedStatuses = leadaccess
       .map((access: string) => accessStatusMap[access])
       .filter(Boolean);
 
@@ -774,15 +718,13 @@ export const GetAllLeads = async (req: Request,res: Response,next: NextFunction,
     if (source) {
       filters.source = source;
     }
-    
-if(status){
-  filters.status=status
-}
-if (search) {
-  filters.$or = [
-    { name: { $regex: search, $options: "i" } },
-  ];
-}
+
+    if (status) {
+      filters.status = status;
+    }
+    if (search) {
+      filters.$or = [{ name: { $regex: search, $options: "i" } }];
+    }
     const [leads, totalCount] = await Promise.all([
       StudentLead.find(filters)
         .skip(skip)
@@ -831,32 +773,31 @@ export const getSingleLead = async (
   }
 };
 
-
-
-export const deleadLead= async (
+export const deleadLead = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
-try {
-    const {id} = req.params;
- await StudentLead.findByIdAndDelete(id)
+  try {
+    const { id } = req.params;
+    await StudentLead.findByIdAndDelete(id);
 
-return res.status(200).json({success:true,message:"delete"})
+    return res.status(200).json({ success: true, message: "delete" });
+  } catch (error) {
+    next(error);
+  }
+};
 
-} catch (error) {
-    next(error)
-}
-}
+export const getTeacher = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const teachers = await Teacher.find().select("fullname email");
 
-
-
-export const getTeacher= async( req: Request,res: Response,next: NextFunction)=>{
-try {
-  const teachers = await Teacher.find().select("fullname email")
-
-return res.status(200).json({teachers})
-} catch (error) {
-  next(error)
-}
-}
+    return res.status(200).json({ teachers });
+  } catch (error) {
+    next(error);
+  }
+};
