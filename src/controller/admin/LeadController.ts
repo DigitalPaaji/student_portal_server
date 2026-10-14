@@ -48,10 +48,10 @@ export const createLead = async (
     } = req.body;
 
     // Required fields
-    if (!name || !phone || !email || !guardianphone) {
+    if (!name || !phone ) {
       res.status(400).json({
         success: false,
-        message: "Name, phone, email and guardian phone are required",
+        message: "Name and phone are required",
       });
       return;
     }
@@ -644,10 +644,10 @@ export const EditLead = async (req: Request,res: Response,next: NextFunction,): 
     } = req.body;
 
     // Required fields
-    if (!name || !phone || !email || !guardianPhone) {
+    if (!name || !phone ) {
       res.status(400).json({
         success: false,
-        message: "Name, phone, email and guardian phone are required",
+        message: "Name and phone are required",
       });
       return;
     }

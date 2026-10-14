@@ -258,13 +258,10 @@ export const getModulesCompleted = async(req:Request,res:Response,next:NextFunct
   })
 }
 
-//   const subjectId = req.params.id;
-
-//  const modules = await ModuleModel.find({subjectId});
 
 
-const modules = await ModuleModel.find({moduleCompleted:true}).sort({moduleCompletedDate:1}).populate("subjectId ");
 
+const modules = await ModuleModel.find({moduleCompleted:true}).select("-answerSubmite -assignStudent").sort({moduleCompletedDate:1}).populate("subjectId","title").populate("assignteacher","fullname email");
 
 
 return res.status(200).json({success:true,modules})
