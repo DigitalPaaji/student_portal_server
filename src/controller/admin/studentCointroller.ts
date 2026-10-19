@@ -19,6 +19,8 @@ export const createStudents = async (
       password,
       phone,subjects,
       studentId,
+      coursefees,
+      installments
     } = req.body;
 
     const admin = req.admin;
@@ -31,7 +33,7 @@ export const createStudents = async (
       });
     }
 
-    // Required fields
+    
     if (!fullname || !email || !password || !studentId) {
       return res.status(400).json({
         success: false,
@@ -39,7 +41,7 @@ export const createStudents = async (
       });
     }
 
-    // Check existing student
+   
     const existingStudent = await StudentModel.findOne({
       $or: [
         { email: email.toLowerCase() },
@@ -57,17 +59,22 @@ export const createStudents = async (
       });
     }
 
-    // Hash password
+    const  submitedfees= Number(installments?.registration?.amount ?? 0) +Number(installments?.first_installment?.amount ?? 0 )+Number(installments?.second_installment?.amount ?? 0 )
+    +Number(installments?.third_installment?.amount ?? 0 )
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create student
-    const student = await StudentModel.create({
+
+    await StudentModel.create({
       fullname,
       email: email.toLowerCase(),
       password: hashedPassword,
       phone,
       studentId,
       subjects,
+      coursefees:Number(coursefees),
+      installments,
+      submitedfees,
       createBy: admin._id,
       createByModel: "superadmin",
     });
@@ -84,6 +91,9 @@ export const createStudents = async (
       message: "Student created successfully",
     
     });
+
+
+
   } catch (error) {
     next(error);
   }
@@ -99,7 +109,7 @@ const {access} = req.admin;
   })
 }
 
-    const students = await StudentModel.find() .select("email phone fullname isActive profileImage studentId status")
+    const students = await StudentModel.find() .select("email phone fullname coursefees submitedfees  isActive profileImage studentId status")
       .sort({ createdAt: -1 });
 return res.status(200).json({success:true,students})
   } catch (error) {

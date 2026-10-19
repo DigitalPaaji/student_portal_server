@@ -232,11 +232,9 @@ export const getModules = async(req:Request,res:Response,next:NextFunction)=>{
   })
 }
 
-  const subjectId = req.params.id;
-
- const modules = await Subject.findById(subjectId).populate("subjectmodules");
-
-return res.status(200).json({success:true,modules:modules?.subjectmodules})
+   const subjectId = req.params.id;
+   const modules = await Subject.findById(subjectId).populate("subjectmodules");
+   return res.status(200).json({success:true,modules:modules?.subjectmodules})
 
 
 

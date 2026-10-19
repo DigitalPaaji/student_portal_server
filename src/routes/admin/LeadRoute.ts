@@ -1,6 +1,6 @@
 import express from "express";
 import { verifyAdmin } from "../../helper/verifyAdmin";
-import { createLead, deleadLead, EditLead, GetAllLeads, getSingleLead, getTeacher, importLeadsFromExcel } from "../../controller/admin/LeadController";
+import { createLead, deleadLead, EditLead, GetAllLeads, getLeadsStatusCounsta, getSingleLead, getTeacher, importLeadsFromExcel } from "../../controller/admin/LeadController";
 import uploadExcel from "../../middleware/uploadExcel";
 
 const routes = express.Router();
@@ -10,6 +10,8 @@ routes.post("/import-excel",verifyAdmin,uploadExcel.single("file"),importLeadsFr
 
 
 routes.get("/get",verifyAdmin,GetAllLeads)
+routes.get("/getleadstatus",verifyAdmin,getLeadsStatusCounsta)
+
 routes.get("/getsingle/:id",verifyAdmin,getSingleLead)
 routes.put("/edit/:id",verifyAdmin,EditLead)
 routes.delete("/delete/:id",verifyAdmin,deleadLead)

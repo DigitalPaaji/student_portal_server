@@ -1,5 +1,20 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
 
+
+interface IInstallmentPayment {
+  amount: number;
+  date: Date;
+  mode:"online" | "offline";
+}
+
+interface IInstallments {
+  registration: IInstallmentPayment;
+  first_installment: IInstallmentPayment;
+  second_installment: IInstallmentPayment;
+  third_installment: IInstallmentPayment;
+  mode:"online" | "offline";
+}
+
 export interface IStudent extends Document {
   fullname: string;
   email: string;
@@ -11,7 +26,8 @@ export interface IStudent extends Document {
   dateOfBirth?: Date;
   address?: string;
   subjects:mongoose.Schema.Types.ObjectId[];
-
+  coursefees:number;
+  submitedfees:number;
 
   
   studentId?: string;
@@ -20,7 +36,7 @@ export interface IStudent extends Document {
 
     createBy: mongoose.Types.ObjectId;
     createByModel: "superadmin" | "Teacher";
-
+ installments:IInstallments ;
   lastLogin?: Date;
   isActive: boolean;
   createdAt: Date;
@@ -95,8 +111,84 @@ const StudentSchema = new Schema<IStudent>(
     },
 
    
+  coursefees:{
+    type:Number,
+    required:true
+  },  
 
-    
+ submitedfees:{
+    type:Number,
+    default:0
+  },  
+
+ installments: {
+  registration: {
+    amount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    date: {
+      type: Date,
+      default: null,
+    },
+    mode:{
+      type:String,
+      enum:["online","offline"]
+    },
+  },
+
+  first_installment: {
+    amount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    date: {
+      type: Date,
+      default: null,
+    },
+     mode:{
+      type:String,
+      enum:["online","offline"]
+    }
+  },
+
+  second_installment: {
+    amount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    date: {
+      type: Date,
+      default: null,
+    },
+     mode:{
+      type:String,
+      enum:["online","offline"]
+    }
+  },
+
+  third_installment: {
+    amount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    date: {
+      type: Date,
+      default: null,
+    },
+     mode:{
+      type:String,
+      enum:["online","offline"]
+    }
+  },  
+},
+
+
+
 
     lastLogin: {
       type: Date,
