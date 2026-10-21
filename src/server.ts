@@ -3,6 +3,11 @@ import express from "express";
 import type { Request, Response }  from "express";
 import cookieParser from "cookie-parser"
 import  SuperAdminAuthRoutes from "./routes/superadmin/AdminAuthRoutes"
+import  Adminteachers from "./routes/superadmin/Adminteachers"
+
+
+
+import  PanalAuthRoutes from "./routes/panal/routes"
 
 
 
@@ -90,7 +95,7 @@ app.use(cors({
 
 
 app.use("/api/v1/super/auth",SuperAdminAuthRoutes)
-
+app.use("/api/v1/super/teacher",Adminteachers)
 
 
 
@@ -128,6 +133,7 @@ app.use("/api/v1/student/auth",studentAuth)
  
 
 
+app.use("/api/v1/panal",PanalAuthRoutes)
 
 app.use(errorHandler) 
 

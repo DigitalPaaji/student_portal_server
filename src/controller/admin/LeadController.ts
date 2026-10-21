@@ -679,7 +679,7 @@ export const EditLead = async (
     next(error);
   }
 };
-
+    
 export const GetAllLeads = async (
   req: Request,
   res: Response,
