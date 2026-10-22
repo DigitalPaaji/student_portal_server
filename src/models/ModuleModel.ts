@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
+import { learningDB } from "../helper/database";
 
 interface IAnswerSubmit {
   user: mongoose.Types.ObjectId;
@@ -153,5 +154,5 @@ ModuleSchema.index(
 );
 
 export const ModuleModel: Model<IModule> =
-  mongoose.models.Module ||
-  mongoose.model<IModule>("Module", ModuleSchema);
+  learningDB.models.Module ||
+  learningDB.model<IModule>("Module", ModuleSchema);

@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+import { learningDB } from "../helper/database";
 
 
 export type LeadStatus =  "NEW" | "COUNSELING" |"DEMO" |"DEMODONE"| "CONVERTED" | "ACTIVE" | "INACTIVE"  | "NOT_INTERESTED";
@@ -254,7 +255,7 @@ const StudentLeadSchema = new Schema<IStudentLead>(
 /* Model */
 /* ---------------------------------- */
 
-const StudentLead = mongoose.model<IStudentLead>(
+const StudentLead = learningDB.model<IStudentLead>(
   "StudentLead",
   StudentLeadSchema
 );

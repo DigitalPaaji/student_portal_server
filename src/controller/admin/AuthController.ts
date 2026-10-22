@@ -106,14 +106,16 @@ export const getAllAdmin = async(req:Request,res:Response,next:NextFunction)=>{
 try {
 
 const accesadmin = req.query.admin
-let allAdmin
-if(accesadmin==="crm"){
-allAdmin = await SuperAdmin.find({access: "crm"}).select("-password");
-}else{
-allAdmin = await SuperAdmin.find({
-    access: { $nin: ["crm"] }
-  }).select("-password");
-}
+let allAdmin=await SuperAdmin.find().select("-password")
+
+
+// if(accesadmin==="crm"){
+// allAdmin = await SuperAdmin.find({access: "crm"}).select("-password");
+// }else{
+// allAdmin = await SuperAdmin.find({
+//     access: { $nin: ["crm"] }
+//   }).select("-password");
+// }
 
    
 

@@ -48,8 +48,7 @@ export const signupTeacher = async (req: Request,res: Response,next:NextFunction
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create teacher
-    const teacher = await Teacher.create({
+      await Teacher.create({
       fullname,
       email: email.toLowerCase(),
       password: hashedPassword,

@@ -1,4 +1,5 @@
 import mongoose, { Document, model, Schema } from "mongoose";
+import { learningDB } from "../helper/database";
 
 
 interface IFollowup extends Document{
@@ -47,7 +48,7 @@ type:String,
 })
 
 
-const FollowUp =  model<IFollowup>("followups",Followupschema);
+const FollowUp =  learningDB.model<IFollowup>("followups",Followupschema);
 
 
 export default FollowUp;

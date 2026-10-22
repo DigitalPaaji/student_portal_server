@@ -3,13 +3,19 @@ import express from "express";
 import type { Request, Response }  from "express";
 import cookieParser from "cookie-parser"
 import  SuperAdminAuthRoutes from "./routes/superadmin/AdminAuthRoutes"
+
 import  Adminteachers from "./routes/superadmin/Adminteachers"
 
 
 
-import  PanalAuthRoutes from "./routes/panal/routes"
 
 
+
+import  AdminAuthRoutesCrm from "./routes/crm/AdminAuthRoutes"
+import  LeadRoutesCrm from "./routes/crm/LeadRoutes"
+import  teacherRoutesCrm from "./routes/crm/teacherRoutes"
+import  subjectRoutesCrm from "./routes/crm/subjectRoutes"
+import  StudentRoutesCrm from "./routes/crm/StudentRoutes"
 
 
 
@@ -45,6 +51,7 @@ import path from "path"
 import mongoose from "mongoose";
 import { verifyAuth } from "./helper/verifyRoute";
 import { logoutTeacher } from "./controller/teachers/teacherAuth";
+import { connectDatabases } from "./helper/database";
 const app = express()
    
 
@@ -95,10 +102,23 @@ app.use(cors({
 
 
 app.use("/api/v1/super/auth",SuperAdminAuthRoutes)
+
+
+
+
+
 app.use("/api/v1/super/teacher",Adminteachers)
 
 
 
+
+/// crm 
+
+app.use("/api/v1/crm/auth",AdminAuthRoutesCrm)
+app.use("/api/v1/crm/leads",LeadRoutesCrm)
+app.use("/api/v1/crm/teacher",teacherRoutesCrm)
+app.use("/api/v1/crm/subject",subjectRoutesCrm)
+app.use("/api/v1/crm/students",StudentRoutesCrm)
 
 
 
@@ -133,7 +153,7 @@ app.use("/api/v1/student/auth",studentAuth)
  
 
 
-app.use("/api/v1/panal",PanalAuthRoutes)
+// app.use("/api/v1/panal",PanalAuthRoutes)
 
 app.use(errorHandler) 
 
@@ -141,19 +161,41 @@ app.use(errorHandler)
 
 
 
-const PORT = process.env.PORT || 8001;
+// const PORT = process.env.PORT || 8001;
 
 
-mongoose.connect(process.env.DATABASE_URL!).then(async()=>{
+// mongoose.connect(process.env.DATABASE_URL!).then(async()=>{
+//   try {
+//     await connectRedis()
+//         app.listen(PORT, () => {
+//       console.log(`Server running at http://localhost:${PORT}`);
+//     });
+//   } catch (error) {
+//         console.error("Server startup failed:", error);
+//     process.exit(1);
+//   }
+// })
+
+const PORT: number = Number(process.env.PORT) || 8000;
+
+const startServer = async (): Promise<void> => {
   try {
-    await connectRedis()
-        app.listen(PORT, () => {
-      console.log(`Server running at http://localhost:${PORT}`);
+    await connectDatabases();
+ await connectRedis()
+     app.listen(PORT,()=>{
+        console.log(`http://localhost:${PORT}`)
     });
+
+   
   } catch (error) {
-        console.error("Server startup failed:", error);
+    console.error("Server startup failed:", error);
     process.exit(1);
   }
-})
+};
+
+startServer();
+
+
+
 
    

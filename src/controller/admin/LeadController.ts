@@ -249,16 +249,9 @@ export const importLeadsFromExcel = async (
   let filePath = "";
 
   try {
-    const { access,leadaccess, _id } = req.admin;
 
-    // CRM permission
-    if (!leadaccess.includes("createlead")) {
-      return res.status(403).json({
-        success: false,
-        message: "You don't have CRM access",
-      });
-    }
 
+    
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -449,7 +442,7 @@ export const importLeadsFromExcel = async (
 
         converted: parseBoolean(row.converted) || status === "CONVERTED",
 
-        createdBy: _id,
+       
 
         _excelRow: excelRow,
       });

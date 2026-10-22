@@ -1,4 +1,5 @@
-import { Document, model, Schema } from "mongoose";
+import { Document, Schema } from "mongoose";
+import { learningDB } from "../helper/database";
 
 
 interface ISuperAdmin extends Document{
@@ -26,7 +27,7 @@ const superAdminSchema= new Schema({
 },{timestamps:true})
 
 
-const SuperAdmin = model<ISuperAdmin>("superadminall",superAdminSchema);
+const SuperAdmin = learningDB.model<ISuperAdmin>("superadminall",superAdminSchema);
 
 export default SuperAdmin;
 

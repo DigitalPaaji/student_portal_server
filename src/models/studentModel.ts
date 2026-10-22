@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema, Model } from "mongoose";
+import { learningDB } from "../helper/database";
 
 
 interface IInstallmentPayment {
@@ -212,6 +213,6 @@ const StudentSchema = new Schema<IStudent>(
 );
 
 export const StudentModel: Model<IStudent> =
-  mongoose.model<IStudent>("Student", StudentSchema);
+  learningDB.model<IStudent>("Student", StudentSchema);
 
 

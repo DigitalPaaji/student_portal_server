@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { learningDB } from "../helper/database";
 
 export interface ISubject extends Document {
   title: string;
@@ -21,12 +22,12 @@ export interface ISubject extends Document {
             },
    createBy: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
+      
       refPath: "createByModel",
     },
   createByModel: {
       type: String,
-      required: true,
+      
       enum: ["superadmin", "Teacher"],
     },
     subjectmodules: [
@@ -44,7 +45,7 @@ export interface ISubject extends Document {
 
 },{timestamps:true})
 
-export const Subject = mongoose.model<ISubject>(
+export const Subject = learningDB.model<ISubject>(
   "Subject",
   SubjectModel
 );

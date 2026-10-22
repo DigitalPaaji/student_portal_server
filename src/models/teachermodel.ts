@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { learningDB } from "../helper/database";
 
 // Teacher Interface
 export interface ITeacher extends Document {
@@ -120,7 +121,7 @@ const teacherSchema = new Schema<ITeacher>(
 );
 
 // Export Model
-const Teacher = mongoose.model<ITeacher>(
+const Teacher = learningDB.model<ITeacher>(
   "Teacher",
   teacherSchema
 );

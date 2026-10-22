@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
+import { learningDB } from "../helper/database";
 
 export interface ITeacherAttendance extends Document {
   teacherId: mongoose.Types.ObjectId;
@@ -63,7 +64,7 @@ TeacherAttendanceSchema.index(
   { unique: true }
 );
 
-export const TeacherAttendance = mongoose.model(
+export const TeacherAttendance = learningDB.model(
   "TeacherAttendance",
   TeacherAttendanceSchema
 );

@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { learningDB } from "../helper/database";
 
 export interface IQuestionOption {
   text: string;
@@ -98,7 +99,7 @@ QuestionSchema.index({
   isActive: 1,
 });
 
-export const Question = mongoose.model<IQuestion>(
+export const Question = learningDB.model<IQuestion>(
   "Question",
   QuestionSchema
 );
