@@ -16,6 +16,7 @@ import  LeadRoutesCrm from "./routes/crm/LeadRoutes"
 import  teacherRoutesCrm from "./routes/crm/teacherRoutes"
 import  subjectRoutesCrm from "./routes/crm/subjectRoutes"
 import  StudentRoutesCrm from "./routes/crm/StudentRoutes"
+import  DashboardRoutesCrm from "./routes/crm/DashboardRoutes"
 
 
 
@@ -119,6 +120,7 @@ app.use("/api/v1/crm/leads",LeadRoutesCrm)
 app.use("/api/v1/crm/teacher",teacherRoutesCrm)
 app.use("/api/v1/crm/subject",subjectRoutesCrm)
 app.use("/api/v1/crm/students",StudentRoutesCrm)
+app.use("/api/v1/crm/dashboard",DashboardRoutesCrm)
 
 
 
