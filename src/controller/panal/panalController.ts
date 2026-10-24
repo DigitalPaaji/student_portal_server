@@ -133,6 +133,7 @@ export const GetAllLeads = async (
     const status = req.query.status || "";
     const source = req.query.source || "";
     const search = req.query.search || "";
+    const todaydate  = req.query.date  || "";
 
     // Map lead access permissions to database statuses
     const accessStatusMap: Record<string, string> = {
@@ -147,9 +148,7 @@ export const GetAllLeads = async (
 
  
 
-    const filters: any = {
-     
-    };
+    const filters: any = {};
 
     if (source) {
       filters.source = source;
@@ -158,9 +157,25 @@ export const GetAllLeads = async (
     if (status) {
       filters.status = status;
     }
+
     if (search) {
       filters.$or = [{ name: { $regex: search, $options: "i" } }];
     }
+
+    if (todaydate === "today") {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+
+      const startOfTomorrow = new Date(startOfToday);
+      startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+      filters.createdAt = {
+        $gte: startOfToday,
+        $lt: startOfTomorrow,
+      };
+    }
+
+
     const [leads, totalCount] = await Promise.all([
       StudentLead.find(filters)
         .skip(skip)
@@ -195,6 +210,23 @@ export const GetAllLeads = async (
 
 export const getLeadsStatusCounsta =async( req: Request,res: Response,next: NextFunction)=>{
 try {
+
+const startOfToday = new Date();
+startOfToday.setHours(0, 0, 0, 0);
+const startOfTomorrow = new Date(startOfToday);
+startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+const statuses = [
+  "NEW",
+  "COUNSELING",
+  "DEMO",
+  "DEMODONE",
+  "CONVERTED",
+  "ACTIVE",
+  "INACTIVE",
+  "NOT_INTERESTED",
+];
+
   const [NEW,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED]= await  Promise.all([
      StudentLead.countDocuments({status:"NEW"}),
      StudentLead.countDocuments({status:"COUNSELING"}),
@@ -206,6 +238,21 @@ try {
      StudentLead.countDocuments({status:"NOT_INTERESTED"}),
 
   ])
+
+  const [NEWToday,COUNSELINGToday,DEMOToday,DEMODONEToday,CONVERTEDToday,ACTIVEToday,INACTIVEToday,NOT_INTERESTEDToday]= await Promise.all([
+  StudentLead.countDocuments({status:"NEW", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow },}),
+     StudentLead.countDocuments({status:"COUNSELING", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow }}),
+     StudentLead.countDocuments({status:"DEMO", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow }}),
+     StudentLead.countDocuments({status:"DEMODONE", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow }}),
+     StudentLead.countDocuments({status:"CONVERTED", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow }}),
+     StudentLead.countDocuments({status:"ACTIVE", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow }}),
+     StudentLead.countDocuments({status:"INACTIVE", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow }}),
+     StudentLead.countDocuments({status:"NOT_INTERESTED", updatedAt: { $gte: startOfToday, $lt: startOfTomorrow }}),
+
+  ])
+
+
+
 
 const [WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,OTHER] = await Promise.all([
   StudentLead.countDocuments({source:"WEBSITE"}), 
@@ -220,7 +267,9 @@ const [WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,OTHER] =
 ])
 
 
-return res.status(200).json({success:true,leadStauts:{NEW,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED},leadsource:{WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,OTHER}      })
+return res.status(200).json({success:true,leadStauts:{NEW,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED},
+  todayStatus:{NEW:NEWToday,COUNSELING:COUNSELINGToday,DEMO:DEMOToday,DEMODONE:DEMODONEToday,CONVERTED:CONVERTEDToday,ACTIVE:ACTIVEToday,INACTIVE:INACTIVEToday,NOT_INTERESTED:NOT_INTERESTEDToday}
+  ,leadsource:{WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,OTHER}})
 
 } catch (error) {
   next(error)

@@ -7,6 +7,8 @@ import bcrypt  from "bcryptjs"
 import { StudentModel } from "../../models/studentModel";
 import { emailQueue } from "../../queues/emailQueue";
 
+
+
 export const createStudents = async (
   req: Request,
   res: Response,
@@ -99,6 +101,7 @@ export const createStudents = async (
   }
 };
 
+
 export const getStudents = async (req:Request,res:Response,next:NextFunction)=>{
   try {
 const {access} = req.admin;
@@ -117,6 +120,7 @@ return res.status(200).json({success:true,students})
   }
 }
 
+
 export const ToggleStudent = async( req: Request,res: Response,next:NextFunction)=>{
 try {
   const StudentID = req.params.id;
@@ -132,5 +136,55 @@ try {
 return res.status(200).json({success:true,message:"student Updated"})
 } catch (error) {
   next(error)
+}
+}
+
+
+
+
+export const getSingleStudent= async( req: Request,res: Response,next:NextFunction)=>{
+  try {
+ const StudentId = req.params.id;
+
+ const student = await StudentModel.findById(StudentId);
+
+
+ return res.status(200).json({success:true,student})
+    
+
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const updateAdmin = async( req: Request,res: Response,next:NextFunction)=>{
+try {
+
+const studentModleID = req.params.id;
+const { fullname,subjects,phone,studentId,coursefees,installments }= req.body;
+
+const student = await StudentModel.findById(studentModleID);
+
+if(!student){ return res.status(400).json({success:false,message:"student not found"})}
+ const  submitedfees=  Number(installments?.registration?.amount ?? 0)
+                      +Number(installments?.first_installment?.amount ?? 0 )
+                      +Number(installments?.second_installment?.amount ?? 0 )
+                      +Number(installments?.third_installment?.amount ?? 0 );
+
+                      
+student.fullname=fullname
+student.subjects=subjects
+student.phone=phone
+student.studentId=studentId
+student.coursefees=coursefees
+student.installments=installments
+student.submitedfees=submitedfees
+
+await student.save();
+
+return res.status(200).json({success:true,message:"Student Updated"});
+
+} catch (error) {
+next(error)  
 }
 }
