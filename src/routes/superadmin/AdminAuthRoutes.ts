@@ -6,7 +6,7 @@ import { verifySuperAdmin } from "../../helper/verifySuperAdmin";
 
 const route = express.Router();
 
-
+   
 
 route.post("/create",createSuperAdminall)
 route.post("/login",loginSuperAdmin)

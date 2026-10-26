@@ -5,6 +5,9 @@ import redisClient from "../../helper/redisServer";
 import JWT from "jsonwebtoken"
 import { sendOtpMail } from "../../helper/sendOtpMail";
 import { emailQueue } from "../../queues/emailQueue";
+import StudentLead from "../../models/LeadModel";
+import { ModuleModel } from "../../models/ModuleModel";
+import { TeacherAttendance } from "../../models/TeacherAtendence";
   
 
 
@@ -277,3 +280,393 @@ await admin.deleteOne()
     next(error)
   }
 }
+
+
+
+const LEAD_STATUSES = [
+  "NEW",
+  "COUNSELING",
+  "DEMO",
+  "DEMODONE",
+  "CONVERTED",
+  "ACTIVE",
+  "INACTIVE",
+  "NOT_INTERESTED",
+] as const;
+
+const LEAD_SOURCES = [
+  "WEBSITE",
+  "FACEBOOK",
+  "INSTAGRAM",
+  "GOOGLE",
+  "WHATSAPP",
+  "REFERRAL",
+  "CALL",
+  "WALK_IN",
+  "OTHER",
+] as const;
+
+const MODULE_STATUSES = [
+  "DRAFT",
+  "PUBLISHED",
+  "ARCHIVED",
+] as const;
+
+const ATTENDANCE_STATUSES = [
+  "PRESENT",
+  "ABSENT",
+  "LATE",
+  "HALF_DAY",
+  "LEAVE",
+] as const;
+
+
+
+const getCounts = <T extends string>(
+  values: readonly T[],
+  rows: Array<{ _id: string; count: number }>
+) => {
+  const counts = new Map(rows.map((row) => [row._id, row.count]));
+
+  return values.map((label) => ({
+    label,
+    count: counts.get(label) ?? 0,
+  }));
+};
+
+export const getDashboardData = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const now = new Date();
+
+    const startOfToday = new Date(now);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const startOfTomorrow = new Date(startOfToday);
+    startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+    const startOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    );
+
+    // Last 7 days, including today
+    const startOfLast7Days = new Date(startOfToday);
+    startOfLast7Days.setDate(startOfLast7Days.getDate() - 6);
+
+    const [
+      totalLeads,
+      todayLeads,
+      convertedLeads,
+      interestedLeads,
+      pendingDemos,
+      todayDemos,
+      totalModules,
+      publishedModules,
+      totalQuizSubmissions,
+      passedQuizSubmissions,
+      attendanceThisMonth,
+      recentLeads,
+      leadsByStatusRaw,
+      leadsBySourceRaw,
+      dailyLeadsRaw,
+      modulesByStatusRaw,
+      attendanceByStatusRaw,
+    ] = await Promise.all([
+     
+      StudentLead.countDocuments(),
+
+      StudentLead.countDocuments({
+        createdAt: {
+          $gte: startOfToday,
+          $lt: startOfTomorrow,
+        },
+      }),
+
+      StudentLead.countDocuments({
+        $or: [
+          { converted: true },
+          { status: "CONVERTED" },
+        ],
+      }),
+
+      StudentLead.countDocuments({
+        status: "COUNSELING",
+      }),
+
+      StudentLead.countDocuments({
+        "demo.status": "active",
+      }),
+
+      StudentLead.countDocuments({
+        "demo.demodate": {
+          $gte: startOfToday,
+          $lt: startOfTomorrow,
+        },
+        "demo.status": "active",
+      }),
+
+      // Module summary
+      ModuleModel.countDocuments(),
+
+      ModuleModel.countDocuments({
+        status: "PUBLISHED",
+        isActive: true,
+      }),
+
+      ModuleModel.aggregate([
+        {
+          $project: {
+            total: { $size: "$answerSubmite" },
+          },
+        },
+        {
+          $group: {
+            _id: null,
+            count: { $sum: "$total" },
+          },
+        },
+      ]).then((rows) => rows[0]?.count ?? 0),
+
+      ModuleModel.aggregate([
+        { $unwind: "$answerSubmite" },
+        { $match: { "answerSubmite.pass": true } },
+        { $count: "count" },
+      ]).then((rows) => rows[0]?.count ?? 0),
+
+      // Attendance records created during the current month
+      TeacherAttendance.countDocuments({
+        date: {
+          $gte: startOfMonth,
+          $lt: startOfTomorrow,
+        },
+      }),
+
+      // Latest leads
+      StudentLead.find()
+        .select(
+          "name phone email course interestedCourse status priority source createdAt demo"
+        )
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .lean(),
+
+      // Lead status chart
+      StudentLead.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+
+      // Lead source chart
+      StudentLead.aggregate([
+        {
+          $group: {
+            _id: "$source",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+
+      // Daily leads chart, last 7 days
+      StudentLead.aggregate([
+        {
+          $match: {
+            createdAt: {
+              $gte: startOfLast7Days,
+              $lt: startOfTomorrow,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: {
+                format: "%Y-%m-%d",
+                date: "$createdAt",
+                timezone: "Asia/Kolkata",
+              },
+            },
+            count: { $sum: 1 },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]),
+
+      // Module status chart
+      ModuleModel.aggregate([
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+
+      // Monthly attendance status chart
+      TeacherAttendance.aggregate([
+        {
+          $match: {
+            date: {
+              $gte: startOfMonth,
+              $lt: startOfTomorrow,
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
+
+    // Fill missing dates with zero
+    const dailyLeadsMap = new Map(
+      dailyLeadsRaw.map((item) => [item._id, item.count])
+    );
+
+    const dailyLeads = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(startOfLast7Days);
+      date.setDate(date.getDate() + index);
+
+      const key = [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0"),
+      ].join("-");
+
+      return {
+        date: key,
+        count: dailyLeadsMap.get(key) ?? 0,
+      };
+    });
+
+    const leadsByStatus = getCounts(
+      LEAD_STATUSES,
+      leadsByStatusRaw
+    );
+
+    const leadsBySource = getCounts(
+      LEAD_SOURCES,
+      leadsBySourceRaw
+    );
+
+    const modulesByStatus = getCounts(
+      MODULE_STATUSES,
+      modulesByStatusRaw
+    );
+
+    const attendanceByStatus = getCounts(
+      ATTENDANCE_STATUSES,
+      attendanceByStatusRaw
+    );
+
+    const totalAttendance = attendanceByStatus.reduce(
+      (sum, item) => sum + item.count,
+      0
+    );
+
+    const presentAttendance =
+      attendanceByStatus.find(
+        (item) => item.label === "PRESENT"
+      )?.count ?? 0;
+
+    return res.status(200).json({
+      success: true,
+      message: "Dashboard data fetched successfully",
+
+      summary: {
+        totalLeads,
+        todayLeads,
+        convertedLeads,
+        interestedLeads,
+        pendingDemos,
+        todayDemos,
+
+        totalModules,
+        publishedModules,
+
+        totalQuizSubmissions,
+        passedQuizSubmissions,
+        failedQuizSubmissions:
+          totalQuizSubmissions - passedQuizSubmissions,
+
+        attendanceThisMonth,
+        presentAttendance,
+        attendanceRate:
+          totalAttendance > 0
+            ? Number(
+                ((presentAttendance / totalAttendance) * 100).toFixed(2)
+              )
+            : 0,
+      },
+
+      charts: {
+        leadsByStatus: {
+          labels: leadsByStatus.map((item) => item.label),
+          datasets: [
+            {
+              label: "Leads by Status",
+              data: leadsByStatus.map((item) => item.count),
+            },
+          ],
+        },
+
+        leadsBySource: {
+          labels: leadsBySource.map((item) => item.label),
+          datasets: [
+            {
+              label: "Leads by Source",
+              data: leadsBySource.map((item) => item.count),
+            },
+          ],
+        },
+
+        dailyLeads: {
+          labels: dailyLeads.map((item) => item.date),
+          datasets: [
+            {
+              label: "New Leads",
+              data: dailyLeads.map((item) => item.count),
+              fill: false,
+              tension: 0.3,
+            },
+          ],
+        },
+
+        modulesByStatus: {
+          labels: modulesByStatus.map((item) => item.label),
+          datasets: [
+            {
+              label: "Modules",
+              data: modulesByStatus.map((item) => item.count),
+            },
+          ],
+        },
+
+        attendanceByStatus: {
+          labels: attendanceByStatus.map((item) => item.label),
+          datasets: [
+            {
+              label: "Attendance This Month",
+              data: attendanceByStatus.map((item) => item.count),
+            },
+          ],
+        },
+      },
+
+      recentLeads,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
