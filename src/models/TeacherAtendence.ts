@@ -52,6 +52,9 @@ const TeacherAttendanceSchema = new Schema<ITeacherAttendance>(
       type: String,
       default: "",
     },
+ 
+
+
   },
   { timestamps: true }
 );

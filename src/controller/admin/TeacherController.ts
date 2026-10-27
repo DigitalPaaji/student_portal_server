@@ -9,6 +9,7 @@ import JWT from "jsonwebtoken";
 import Teacher from "../../models/teachermodel";
 import { emailQueue } from "../../queues/emailQueue";
 import { TeacherAttendance } from "../../models/TeacherAtendence";
+import mongoose from "mongoose";
 
 
 export const signupTeacher = async (req: Request,res: Response,next:NextFunction) => {
@@ -140,7 +141,7 @@ try {
 
   
   const TeacherId = await req.params.id;
-  const teacher = await Teacher.findById(TeacherId);
+  const teacher = await Teacher.findById(TeacherId).populate("students","fullname email studentId");
   if (!teacher) {
       return res.status(404).json({
         success: false,
@@ -315,6 +316,68 @@ export const createTeacherAttendance = async (
   }
 };
 
+
+export const addStudent = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id: teacherId } = req.params;
+    const { studentID } = req.body;
+
+    // Validate IDs
+    if (
+      !mongoose.isValidObjectId(teacherId) ||
+      !mongoose.isValidObjectId(studentID)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid teacher ID or student ID",
+      });
+    }
+
+    // Find teacher
+    const teacher = await Teacher.findById(teacherId);
+
+    if (!teacher) {
+      return res.status(404).json({
+        success: false,
+        message: "Teacher not found",
+      });
+    }
+
+    // Check whether student already exists
+    const included = teacher.students.some(
+      (id) => id.toString() === studentID
+    );
+
+    if (included) {
+      // Remove student
+      teacher.students = teacher.students.filter(
+        (id) => id.toString() !== studentID
+      );
+    } else {
+      // Add student
+      teacher.students.push(studentID);
+    }
+
+    await teacher.save();
+
+    // Populate students before returning the response
+    await teacher.populate("students", "fullname email studentId");
+
+    return res.status(200).json({
+      success: true,
+      message: included
+        ? "Student removed from teacher successfully"
+        : "Student added to teacher successfully",
+      students: teacher.students,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 
 

@@ -15,10 +15,10 @@ export interface ITeacher extends Document {
   qualification?: string;
   experience?: number;
 
-  subjects: string[];
-  modules: mongoose.Types.ObjectId[];
-  demos: mongoose.Types.ObjectId[];
-
+   subjects: string[];
+   modules: mongoose.Types.ObjectId[];
+   demos: mongoose.Types.ObjectId[];
+  students:mongoose.Types.ObjectId[];
   isVerified: boolean;
   isActive: boolean;
 
@@ -112,7 +112,11 @@ const teacherSchema = new Schema<ITeacher>(
       type: Boolean,
       default: true,
     },
-
+  students:[
+    {type:mongoose.Schema.Types.ObjectId,
+      ref:"Student"
+    }
+   ]
    
   },
   {

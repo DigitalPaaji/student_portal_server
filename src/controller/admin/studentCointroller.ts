@@ -4,7 +4,7 @@
 
 import type { NextFunction, Request, Response } from "express";
 import bcrypt  from "bcryptjs"
-import { StudentModel } from "../../models/studentModel";
+import { type IStudent, StudentModel } from "../../models/studentModel";
 import { emailQueue } from "../../queues/emailQueue";
 
 
@@ -187,4 +187,31 @@ return res.status(200).json({success:true,message:"Student Updated"});
 } catch (error) {
 next(error)  
 }
+}
+
+
+export const searchStudent = async(req: Request,res: Response,next:NextFunction)=>{
+  try {
+    const { search } = req.params;
+
+
+  const filter  : any = {
+      $or: [
+        { fullname: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+      ],
+    };
+
+
+    const students = await StudentModel.find(filter)
+      .select("fullname email")
+      .lean();
+
+    res.status(200).json({
+      success: true,
+      students,
+    });
+  } catch (error) {
+    next(error)
+  }
 }

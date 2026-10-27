@@ -14,4 +14,9 @@ routes.patch("/update-status/:id",verifyAdmin,ToggleStudentCrm)
 routes.get("/getstudent/:id",verifyAdmin,getSingleStudent)
 routes.put("/update-user/:id",verifyAdmin,updateAdmin)
 
+
+
+
+
+
 export default routes;
