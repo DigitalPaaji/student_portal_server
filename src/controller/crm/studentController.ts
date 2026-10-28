@@ -405,7 +405,7 @@ try {
     return res.status(404).json({success:false,message:"student not Found"})
    }
     
-   student.isActive = !student?.isActive 
+  //  student.isActive = !student?.isActive 
  await student.save()
 
 return res.status(200).json({success:true,message:"student Updated"})

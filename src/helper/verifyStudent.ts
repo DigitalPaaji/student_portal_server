@@ -42,11 +42,11 @@ if(!student){
         message: "student account not found",
       });
 }
- if(!student.isActive){
-return res.status(401).json({
-    success:false,message:"student InActive Contact Admin"
-})
- }
+//  if(!student.isActive){
+// return res.status(401).json({
+//     success:false,message:"student InActive Contact Admin"
+// })
+//  }
 
  
  (req as any).student = student;

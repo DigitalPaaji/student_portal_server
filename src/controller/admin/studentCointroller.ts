@@ -136,24 +136,6 @@ return res.status(200).json({success:true,students})
 }
 
 
-// export const ToggleStudent = async( req: Request,res: Response,next:NextFunction)=>{
-// try {
-//   const StudentID = req.params.id;
-
-//    const student = await StudentModel.findById(StudentID);
-//    if(!student){
-//     return res.status(404).json({success:false,message:"student not Found"})
-//    }
-    
-//    student.isActive = !student?.isActive 
-//  await student.save()
-
-// return res.status(200).json({success:true,message:"student Updated"})
-// } catch (error) {
-//   next(error)
-// }
-// }
-
 
 
 
