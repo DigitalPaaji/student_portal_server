@@ -254,7 +254,7 @@ const statuses = [
 
 
 
-const [WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,OTHER] = await Promise.all([
+const [WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,SEMINAR,OTHER] = await Promise.all([
   StudentLead.countDocuments({source:"WEBSITE"}), 
   StudentLead.countDocuments({source:"FACEBOOK"}), 
   StudentLead.countDocuments({source:"INSTAGRAM"}), 
@@ -263,13 +263,14 @@ const [WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,OTHER] =
   StudentLead.countDocuments({source:"REFERRAL"}), 
   StudentLead.countDocuments({source:"CALL"}), 
   StudentLead.countDocuments({source:"WALK_IN"}), 
+  StudentLead.countDocuments({source:"SEMINAR"}), 
   StudentLead.countDocuments({source:"OTHER"}), 
 ])
 
 
 return res.status(200).json({success:true,leadStauts:{NEW,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED},
   todayStatus:{NEW:NEWToday,COUNSELING:COUNSELINGToday,DEMO:DEMOToday,DEMODONE:DEMODONEToday,CONVERTED:CONVERTEDToday,ACTIVE:ACTIVEToday,INACTIVE:INACTIVEToday,NOT_INTERESTED:NOT_INTERESTEDToday}
-  ,leadsource:{WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,OTHER}})
+  ,leadsource:{WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,SEMINAR,OTHER}})
 
 } catch (error) {
   next(error)

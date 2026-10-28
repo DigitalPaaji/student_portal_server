@@ -19,9 +19,15 @@ export const createStudents = async (
       fullname,
       email,
       password,
-      phone,subjects,
+      phone,
+      subjects,
       studentId,
-      coursefees,
+      totalcoursefees,
+      coursediscount,
+      teacherAsign,
+      studentStatus,
+      dropoutremark,
+      registration,
       installments
     } = req.body;
 
@@ -61,32 +67,41 @@ export const createStudents = async (
       });
     }
 
-    const  submitedfees= Number(installments?.registration?.amount ?? 0) +Number(installments?.first_installment?.amount ?? 0 )+Number(installments?.second_installment?.amount ?? 0 )
-    +Number(installments?.third_installment?.amount ?? 0 )
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-
-    await StudentModel.create({
-      fullname,
-      email: email.toLowerCase(),
-      password: hashedPassword,
+ const  submitedfees= Number(coursediscount?.amount ?? 0 ) +  Number(registration?.amount ?? 0) + installments?.reduce((acc : Number, current:any) => acc + current.amount, 0)
+const payload={
+    fullname,
+      email,
+      password:hashedPassword,
       phone,
-      studentId,
       subjects,
-      coursefees:Number(coursefees),
+      studentId,
+      totalcoursefees,
+      teacherAsign,
+      coursediscount,
+      studentStatus,
+      dropoutremark,
+      registration,
       installments,
       submitedfees,
       createBy: admin._id,
-      createByModel: "superadmin",
-    });
+      createByModel: "superadmin" as const,
+}
+
+   
+
+await StudentModel.create(payload)
+
+   
 
  
-    await emailQueue.add("sendWelcomeEmail", {
-      targetEmail: email.toLowerCase(),
-      tempPassword: password,
-      studentId
-    });
+    // await emailQueue.add("sendWelcomeEmail", {
+    //   targetEmail: email.toLowerCase(),
+    //   tempPassword: password,
+    //   studentId
+    // });
 
     return res.status(201).json({
       success: true,
@@ -112,7 +127,7 @@ const {access} = req.admin;
   })
 }
 
-    const students = await StudentModel.find() .select("email phone fullname coursefees submitedfees  isActive profileImage studentId status")
+    const students = await StudentModel.find() .select("email phone fullname totalcoursefees submitedfees  studentStatus profileImage studentId ")
       .sort({ createdAt: -1 });
 return res.status(200).json({success:true,students})
   } catch (error) {
@@ -121,23 +136,23 @@ return res.status(200).json({success:true,students})
 }
 
 
-export const ToggleStudent = async( req: Request,res: Response,next:NextFunction)=>{
-try {
-  const StudentID = req.params.id;
+// export const ToggleStudent = async( req: Request,res: Response,next:NextFunction)=>{
+// try {
+//   const StudentID = req.params.id;
 
-   const student = await StudentModel.findById(StudentID);
-   if(!student){
-    return res.status(404).json({success:false,message:"student not Found"})
-   }
+//    const student = await StudentModel.findById(StudentID);
+//    if(!student){
+//     return res.status(404).json({success:false,message:"student not Found"})
+//    }
     
-   student.isActive = !student?.isActive 
- await student.save()
+//    student.isActive = !student?.isActive 
+//  await student.save()
 
-return res.status(200).json({success:true,message:"student Updated"})
-} catch (error) {
-  next(error)
-}
-}
+// return res.status(200).json({success:true,message:"student Updated"})
+// } catch (error) {
+//   next(error)
+// }
+// }
 
 
 
@@ -146,7 +161,7 @@ export const getSingleStudent= async( req: Request,res: Response,next:NextFuncti
   try {
  const StudentId = req.params.id;
 
- const student = await StudentModel.findById(StudentId);
+ const student = await StudentModel.findById(StudentId).select("-password");
 
 
  return res.status(200).json({success:true,student})
@@ -161,24 +176,38 @@ export const updateAdmin = async( req: Request,res: Response,next:NextFunction)=
 try {
 
 const studentModleID = req.params.id;
-const { fullname,subjects,phone,studentId,coursefees,installments }= req.body;
+const {fullname,
+
+      phone,
+      subjects,
+      studentId,
+      totalcoursefees,
+      coursediscount,
+      teacherAsign,
+      studentStatus,
+      dropoutremark,
+      registration,
+      installments}= req.body;
 
 const student = await StudentModel.findById(studentModleID);
 
 if(!student){ return res.status(400).json({success:false,message:"student not found"})}
- const  submitedfees=  Number(installments?.registration?.amount ?? 0)
-                      +Number(installments?.first_installment?.amount ?? 0 )
-                      +Number(installments?.second_installment?.amount ?? 0 )
-                      +Number(installments?.third_installment?.amount ?? 0 );
+ const  submitedfees= Number(coursediscount?.amount ?? 0 ) +  Number(registration?.amount ?? 0) + installments?.reduce((acc : Number, current:any) => acc + current.amount, 0)
+
 
                       
 student.fullname=fullname
 student.subjects=subjects
 student.phone=phone
 student.studentId=studentId
-student.coursefees=coursefees
+student.totalcoursefees=totalcoursefees
 student.installments=installments
 student.submitedfees=submitedfees
+student.registration=registration
+student.coursediscount=coursediscount
+student.teacherAsign=teacherAsign
+student.studentStatus=studentStatus
+student.dropoutremark=dropoutremark
 
 await student.save();
 

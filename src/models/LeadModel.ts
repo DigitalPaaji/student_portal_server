@@ -16,6 +16,7 @@ export type LeadSource =
   | "REFERRAL"
   | "CALL"
   | "WALK_IN"
+  | "SEMINAR"
   | "OTHER";
 
 export type MaritalStatus = "single" | "married";
@@ -34,7 +35,12 @@ status:"active" | "done";
 demodate:Date,
 note:String
 }
+interface IFollowup {
+status:string;
+date:Date;
+note:String;
 
+}
 
 export interface IStudentLead extends Document {
   name: string;
@@ -64,7 +70,7 @@ export interface IStudentLead extends Document {
   source: LeadSource;
 
   status: LeadStatus;
-
+ followups:IFollowup[];
   priority: LeadPriority;
 
   preferredMode: PreferredMode;
@@ -197,6 +203,7 @@ const StudentLeadSchema = new Schema<IStudentLead>(
         "REFERRAL",
         "CALL",
         "WALK_IN",
+        "SEMINAR",
         "OTHER",
       ],
       default: "OTHER",
@@ -240,6 +247,15 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       type: Boolean,
       default: false,
     },
+
+    followups:[
+      {status:{type:String},
+      date:{type:Date},
+      note:{ type:String}
+
+      }
+    ],
+
 
     createdBy: {
       type: Schema.Types.ObjectId,

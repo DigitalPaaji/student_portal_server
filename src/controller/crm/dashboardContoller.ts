@@ -24,6 +24,7 @@ const LEAD_SOURCES = [
   "REFERRAL",
   "CALL",
   "WALK_IN",
+  "SEMINAR",
   "OTHER",
 ] as const;
 
