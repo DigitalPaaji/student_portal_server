@@ -144,7 +144,7 @@ export const getStudentsCrm = async (req:Request,res:Response,next:NextFunction)
                 },
               },
 
-              totalCourseFees: {
+              coursefees: {
                 $sum: { $ifNull: ["$coursefees", 0] },
               },
 
@@ -173,19 +173,19 @@ export const getStudentsCrm = async (req:Request,res:Response,next:NextFunction)
               totalStudents: 1,
               activeStudents: 1,
               inactiveStudents: 1,
-              totalCourseFees: 1,
+              coursefees: 1,
               totalCollectedFees: 1,
               totalPendingFees: 1,
 
               collectionRate: {
                 $cond: [
-                  { $gt: ["$totalCourseFees", 0] },
+                  { $gt: ["$coursefees", 0] },
                   {
                     $multiply: [
                       {
                         $divide: [
                           "$totalCollectedFees",
-                          "$totalCourseFees",
+                          "$coursefees",
                         ],
                       },
                       100,
@@ -330,7 +330,7 @@ export const getStudentsCrm = async (req:Request,res:Response,next:NextFunction)
       totalStudents: 0,
       activeStudents: 0,
       inactiveStudents: 0,
-      totalCourseFees: 0,
+      coursefees: 0,
       totalCollectedFees: 0,
       totalPendingFees: 0,
       collectionRate: 0,

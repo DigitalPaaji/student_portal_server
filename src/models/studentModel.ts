@@ -42,7 +42,7 @@ export interface IStudent extends Document {
   studentId?: string;
   coursediscount:IDiscount;
   dropoutremark:String
-  totalcoursefees:number;
+  coursefees:number;
   submitedfees:number;
   createBy: mongoose.Types.ObjectId;
   createByModel: "superadmin" | "Teacher";
@@ -116,7 +116,7 @@ const StudentSchema = new Schema<IStudent>({
       type:String,
       enum:["active","drop","pass out"]
     },
-     totalcoursefees:{
+     coursefees:{
     type:Number,
     required:true
    },  

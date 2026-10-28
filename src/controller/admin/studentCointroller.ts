@@ -22,7 +22,7 @@ export const createStudents = async (
       phone,
       subjects,
       studentId,
-      totalcoursefees,
+      coursefees,
       coursediscount,
       teacherAsign,
       studentStatus,
@@ -78,7 +78,7 @@ const payload={
       phone,
       subjects,
       studentId,
-      totalcoursefees,
+      coursefees,
       teacherAsign,
       coursediscount,
       studentStatus,
@@ -127,7 +127,7 @@ const {access} = req.admin;
   })
 }
 
-    const students = await StudentModel.find() .select("email phone fullname totalcoursefees submitedfees  studentStatus profileImage studentId ")
+    const students = await StudentModel.find() .select("email phone fullname coursefees submitedfees  studentStatus profileImage studentId ")
       .sort({ createdAt: -1 });
 return res.status(200).json({success:true,students})
   } catch (error) {
@@ -163,7 +163,7 @@ const {fullname,
       phone,
       subjects,
       studentId,
-      totalcoursefees,
+      coursefees,
       coursediscount,
       teacherAsign,
       studentStatus,
@@ -182,7 +182,7 @@ student.fullname=fullname
 student.subjects=subjects
 student.phone=phone
 student.studentId=studentId
-student.totalcoursefees=totalcoursefees
+student.coursefees=coursefees
 student.installments=installments
 student.submitedfees=submitedfees
 student.registration=registration

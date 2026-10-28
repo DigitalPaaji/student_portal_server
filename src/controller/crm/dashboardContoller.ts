@@ -151,7 +151,7 @@ export const GetDashboardData = async (
 
             totalStudents: { $sum: 1 },
 
-            totalCourseFees: {
+            coursefees: {
               $sum: { $ifNull: ["$coursefees", 0] },
             },
 
@@ -514,7 +514,7 @@ export const GetDashboardData = async (
     // the fixed status keys used by the dashboard.
     const studentStats = studentStatsResult[0] || {
       totalStudents: 0,
-      totalCourseFees: 0,
+      coursefees: 0,
       totalCollectedFees: 0,
       registration: 0,
       firstInstallment: 0,
@@ -524,17 +524,17 @@ export const GetDashboardData = async (
       todayCollected: 0,
     };
 
-    const totalCourseFees = studentStats.totalCourseFees;
+    const coursefees = studentStats.coursefees;
     const totalCollectedFees = studentStats.totalCollectedFees;
 
     const totalPendingFees = Math.max(
       0,
-      totalCourseFees - totalCollectedFees
+      coursefees - totalCollectedFees
     );
 
     const collectionRate =
-      totalCourseFees > 0
-        ? (totalCollectedFees / totalCourseFees) * 100
+      coursefees > 0
+        ? (totalCollectedFees / coursefees) * 100
         : 0;
 
     const totalInstallments =
@@ -587,7 +587,7 @@ export const GetDashboardData = async (
         },
 
         revenue: {
-          totalCourseFees,
+          coursefees,
           totalCollectedFees,
           totalPendingFees,
           collectionRate: Number(collectionRate.toFixed(2)),
