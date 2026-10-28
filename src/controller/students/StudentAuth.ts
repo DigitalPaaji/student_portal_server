@@ -26,11 +26,7 @@ export  const loginStudent= async (req:Request,res:Response,next:NextFunction)=>
         return res.status(404).json({success:false,message:"Invalid email and password"})
       }
 
- if(!findStudent.isActive){
-return res.status(401).json({
-    success:false,message:"Student InActive Contact Admin"
-})
- }
+
 
 const token = await JWT.sign({id:findStudent._id ,role: "student"},  process.env.JWT_SECRET as string,{
     expiresIn:"60d"
