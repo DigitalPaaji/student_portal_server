@@ -64,26 +64,26 @@ const admin = await SuperAdmin.findOne();
     const hashedPassword = await bcrypt.hash(password, 10);
 
 
-    await StudentModel.create({
-      fullname,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      phone,
-      studentId,
-      subjects,
-      coursefees:Number(coursefees),
-      installments,
-      submitedfees,
-      createBy: admin._id,
-      createByModel: "superadmin",
-    });
+    // await StudentModel.create({
+    //   fullname,
+    //   email: email.toLowerCase(),
+    //   password: hashedPassword,
+    //   phone,
+    //   studentId,
+    //   subjects,
+    //   // coursefees:Number(coursefees),
+    //   installments,
+    //   submitedfees,
+    //   createBy: admin._id,
+    //   createByModel: "superadmin",
+    // });
 
  
-    await emailQueue.add("sendWelcomeEmail", {
-      targetEmail: email.toLowerCase(),
-      tempPassword: password,
-      studentId
-    });
+    // await emailQueue.add("sendWelcomeEmail", {
+    //   targetEmail: email.toLowerCase(),
+    //   tempPassword: password,
+    //   studentId
+    // });
 
     return res.status(201).json({
       success: true,
