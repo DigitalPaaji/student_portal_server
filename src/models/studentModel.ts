@@ -28,6 +28,10 @@ interface IRegisteration {
   mode:"online" | "offline";
 }
 
+interface IFollow{
+note:string,time:Date
+}
+
 export interface IStudent extends Document {
   fullname: string;
   email: string;
@@ -49,7 +53,9 @@ export interface IStudent extends Document {
   registration:IRegisteration
   lastLogin?: Date;
   installments:IRegisteration[];
-  teacherAsign :mongoose.Schema.Types.ObjectId;
+  teacherAsign :mongoose.Types.ObjectId | null;
+  followups :IFollow[];
+  nextFollowup:Date | null ;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -175,7 +181,8 @@ installments:[
 
 teacherAsign:{
   type:mongoose.Schema.Types.ObjectId,
-  ref:"Teacher"
+  ref:"Teacher",
+  default:null,
 },
 
   createBy: {
@@ -193,11 +200,25 @@ teacherAsign:{
     lastLogin: {
       type: Date,
     },
-},{
-  timestamps:true
-})
+
+      followups:[ {
+   note: {
+  type: String,
+},
+time: {
+  type: Date,
+  default: Date.now,
+},},
+  ],
+
+
+nextFollowup:{
+type:Date,
+default:null
+}
+
+},{timestamps:true})
 
 
 
-export const StudentModel: Model<IStudent> =
-  learningDB.model<IStudent>("Student", StudentSchema);
+export const StudentModel: Model<IStudent> = learningDB.model<IStudent>("Student", StudentSchema);

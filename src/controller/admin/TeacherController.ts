@@ -10,6 +10,7 @@ import Teacher from "../../models/teachermodel";
 import { emailQueue } from "../../queues/emailQueue";
 import { TeacherAttendance } from "../../models/TeacherAtendence";
 import mongoose from "mongoose";
+import { StudentModel } from "../../models/studentModel";
 
 
 export const signupTeacher = async (req: Request,res: Response,next:NextFunction) => {
@@ -346,8 +347,14 @@ export const addStudent = async (
         message: "Teacher not found",
       });
     }
+const student = await StudentModel.findById(studentID)
 
-    // Check whether student already exists
+if(!student){
+  return res.status(404).json({success:false,message:"Student Not Found"})
+}
+
+
+
     const included = teacher.students.some(
       (id) => id.toString() === studentID
     );
@@ -357,11 +364,14 @@ export const addStudent = async (
       teacher.students = teacher.students.filter(
         (id) => id.toString() !== studentID
       );
-    } else {
+       student.teacherAsign= null
+    
+      } else {
       // Add student
       teacher.students.push(studentID);
+         student.teacherAsign= teacher?._id
     }
-
+await student.save()
     await teacher.save();
 
     // Populate students before returning the response
@@ -375,7 +385,7 @@ export const addStudent = async (
       students: teacher.students,
     });
   } catch (error) {
-    next(error);
+    next(error); 
   }
 };
 
