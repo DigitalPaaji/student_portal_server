@@ -81,7 +81,7 @@ if(!teacher){
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
- const  submitedfees= Number(coursediscount?.amount ?? 0 ) +  Number(registration?.amount ?? 0) + installments?.reduce((acc : Number, current:any) => acc + current.amount, 0)
+ const  submitedfees= Number(registration?.amount ?? 0) + installments?.reduce((acc : Number, current:any) => acc + current.amount, 0)
 const payload={
     fullname,
       email,
@@ -211,7 +211,7 @@ const {access} = req.admin;
     const [students, totalStudents] = await Promise.all([
       StudentModel.find(filter)
         .select(
-          "email phone fullname coursefees submitedfees studentStatus profileImage studentId"
+          "email phone fullname coursefees submitedfees studentStatus profileImage studentId coursediscount"
         )
         .sort({ createdAt: -1, _id: -1 })
         .skip(skip)
@@ -303,7 +303,7 @@ const {fullname,
 const student = await StudentModel.findById(studentModleID);
 
 if(!student){ return res.status(400).json({success:false,message:"student not found"})}
- const  submitedfees= Number(coursediscount?.amount ?? 0 ) +  Number(registration?.amount ?? 0) + installments?.reduce((acc : Number, current:any) => acc + current.amount, 0)
+ const  submitedfees= Number(registration?.amount ?? 0) + installments?.reduce((acc : Number, current:any) => acc + current.amount, 0)
 
 if(teacherAsign !==student.teacherAsign){
   if(student.teacherAsign){
