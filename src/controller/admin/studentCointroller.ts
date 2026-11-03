@@ -428,3 +428,63 @@ export const DeleteFollowUp = async(req:Request,res: Response,next:NextFunction)
     next(error)
   }
 }
+
+
+
+
+export const upcomingFollowUp = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { date } = req.query;
+
+    let startDate: Date;
+    let endDate: Date;
+
+    if (date) {
+      const selectedDate = new Date(`${date}T00:00:00.000+05:30`);
+
+      if (isNaN(selectedDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid date format. Use YYYY-MM-DD",
+        });
+      }
+
+      startDate = selectedDate;
+    } else {
+      // Default: Today
+      const now = new Date();
+
+      startDate = new Date(now);
+      startDate.setHours(0, 0, 0, 0);
+    }
+
+    endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+
+    const upcomingLeads = await StudentModel.find({
+      nextFollowup: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    })
+      .select("fullname phone nextFollowup email studentStatus studentId")
+      .populate("subjects", "name")
+      .populate("teacherAsign", "fullname")
+      .sort({ nextFollowup: 1 });
+
+    return res.status(200).json({
+      success: true,
+      date: date || new Date().toISOString().split("T")[0],
+      total: upcomingLeads.length,
+      data: upcomingLeads,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
