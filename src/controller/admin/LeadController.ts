@@ -44,7 +44,7 @@ export const createLead = async (
       preferredMode,
       notes,
       demo,
-      converted,
+      converted,nextFollowUpdate
     } = req.body;
 
     // Required fields
@@ -62,37 +62,26 @@ export const createLead = async (
 
     const lead = await StudentLead.create({
       name: name.trim(),
-
       father: father?.trim(),
       mother: mother?.trim(),
-
       dob: dob || null,
-
       marital: marital || "single",
       gender: gender || "male",
-
       phone: phone.trim(),
       guardianPhone: guardianphone.trim(),
-
       email: email.trim().toLowerCase(),
-
       qualification: qualification?.trim(),
-
       address: address?.trim(),
       city: city?.trim(),
       state: state?.trim(),
-
       course: course?.trim(),
       interestedCourse: interestedCourse?.trim(),
-
       source: source || "OTHER",
       status: status || "NEW",
       priority: priority || "MEDIUM",
-
       preferredMode: preferredMode || "offline",
-
       notes: notes?.trim(),
-
+      nextFollowUpdate:nextFollowUpdate ? nextFollowUpdate : null,
       converted: converted ?? false,
       demo,
       createdBy: _id,

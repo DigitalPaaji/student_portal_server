@@ -80,7 +80,7 @@ export interface IStudentLead extends Document {
   converted: boolean;
 demo:IDemo;
   createdBy?: mongoose.Types.ObjectId;
-
+   nextFollowUpdate:Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -251,11 +251,10 @@ const StudentLeadSchema = new Schema<IStudentLead>(
     followups:[
       {status:{type:String},
       date:{type:Date},
-      note:{ type:String}
+      note:{ type:String}}],
+    nextFollowUpdate:{type:Date,default:null},
 
-      }
-    ],
-
+    
 
     createdBy: {
       type: Schema.Types.ObjectId,
