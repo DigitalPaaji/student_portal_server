@@ -36,7 +36,6 @@ demodate:Date,
 note:String
 }
 interface IFollowup {
-status:string;
 date:Date;
 note:String;
 
@@ -85,9 +84,8 @@ demo:IDemo;
   updatedAt: Date;
 }
 
-/* ---------------------------------- */
-/* Schema */
-/* ---------------------------------- */
+
+
 
 const StudentLeadSchema = new Schema<IStudentLead>(
   {
@@ -248,10 +246,11 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       default: false,
     },
 
-    followups:[
-      {status:{type:String},
+    followups:[ {
       date:{type:Date},
       note:{ type:String}}],
+
+
     nextFollowUpdate:{type:Date,default:null},
 
     

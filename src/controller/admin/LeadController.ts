@@ -662,6 +662,71 @@ export const EditLead = async (
     next(error);
   }
 };
+
+
+
+export const AddFollowup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+  
+    const { id } = req.params;
+
+    const {note,nextFollowUpdate} = req.body;
+
+    // Required fields
+    if (!note) {
+      res.status(400).json({
+        success: false,
+        message: "Note is required",
+      });
+      return;
+    }
+
+    // Find lead
+    const lead = await StudentLead.findById(id);
+
+    if (!lead) {
+      res.status(404).json({
+        success: false,
+        message: "Student lead not found",
+      });
+      return;
+    }
+
+     const followup= {
+      date : new Date(Date.now()) ,
+      note
+     }
+    
+     lead.followups.push(followup)
+
+     if(nextFollowUpdate){
+      lead.nextFollowUpdate=nextFollowUpdate
+    }else{
+       lead.nextFollowUpdate=null
+
+     }
+    
+
+    await lead.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Lead updated successfully",
+      lead,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
+
     
 export const GetAllLeads = async (
   req: Request,
@@ -793,7 +858,7 @@ export const getSingleLead = async (
   }
 };
 
-export const deleadLead = async (
+export const deleteLead = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -808,6 +873,28 @@ export const deleadLead = async (
   }
 };
 
+
+
+export const deleteLeadFollowup = async (req: Request,res: Response,next: NextFunction,) => {
+  try {
+    const { id,followupId } = req.params;
+    
+
+       const lead=  await StudentLead.findById(id);
+      if(!lead){return res.status(401).json({success:false,message:"Lead not Found"})}
+      
+      lead.followups= lead.followups.filter((item : any)=>item?._id.toString() !== followupId.toString())
+  
+      await lead.save()
+    return res.status(200).json({ success: true, message: "delete" ,followups:lead.followups });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
+
 export const getTeacher = async (
   req: Request,
   res: Response,
@@ -821,3 +908,89 @@ export const getTeacher = async (
     next(error);
   }
 };
+
+
+
+export const getUpcommingFolowup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const date = req.query.date as string | undefined;
+
+    // Get today's date in IST
+    const getISTDate = () => {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: "Asia/Kolkata",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }).format(new Date());
+    };
+
+    // Use selected date or today's date
+    const selectedDate = date?.trim() || getISTDate();
+
+    // Validate YYYY-MM-DD format
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid date format. Use YYYY-MM-DD",
+      });
+    }
+
+    // Validate actual calendar date
+    const [year, month, day] = selectedDate.split("-").map(Number);
+
+    const checkDate = new Date(
+      Date.UTC(year, month - 1, day)
+    );
+
+    if (
+      checkDate.getUTCFullYear() !== year ||
+      checkDate.getUTCMonth() !== month - 1 ||
+      checkDate.getUTCDate() !== day
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid calendar date",
+      });
+    }
+
+    // IST day boundaries converted to UTC
+    const startDate = new Date(
+      `${selectedDate}T00:00:00+05:30`
+    );
+
+    const endDate = new Date(
+      startDate.getTime() + 24 * 60 * 60 * 1000
+    );
+
+    // Fetch follow-ups for selected date
+    const upcomingLeads = await StudentLead.find({
+      nextFollowUpdate: {
+        $gte: startDate,
+        $lt: endDate,
+      },
+    })
+      .select(
+        "name phone email city source status priority nextFollowUpdate"
+      )
+      .sort({ nextFollowUpdate: 1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      message: "Upcoming follow-ups fetched successfully",
+      date: selectedDate,
+      total: upcomingLeads.length,
+      data: upcomingLeads,
+    });
+
+  } catch (error) {
+    console.error("Get Upcoming Follow-ups Error:", error);
+    next(error);
+  }
+};
+
