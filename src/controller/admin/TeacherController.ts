@@ -142,7 +142,7 @@ try {
 
   
   const TeacherId = await req.params.id;
-  const teacher = await Teacher.findById(TeacherId).populate("students","fullname email studentId");
+  const teacher = await Teacher.findById(TeacherId).populate("students","fullname studentId studentStatus");
   if (!teacher) {
       return res.status(404).json({
         success: false,
@@ -216,33 +216,25 @@ try {
       date: -1,
     });
 
-    // -----------------------------
-    // Attendance Summary
-    // -----------------------------
+        
+        const [totalStudent,activeStudent,dropStudent,passOutStudent]= await Promise.all([
+                 StudentModel.countDocuments({teacherAsign:teacher._id}),
+                 StudentModel.countDocuments({teacherAsign:teacher._id,studentStatus:"active"}),
+                 StudentModel.countDocuments({teacherAsign:teacher._id,studentStatus:"drop"}),
+                 StudentModel.countDocuments({teacherAsign:teacher._id,studentStatus:"pass out"}),
 
-    const summary = {
-      total: attendance.length,
+         
 
-      present: attendance.filter(
-        (item) => item.status === "PRESENT"
-      ).length,
+        ])
 
-      absent: attendance.filter(
-        (item) => item.status === "ABSENT"
-      ).length,
 
-      late: attendance.filter(
-        (item) => item.status === "LATE"
-      ).length,
 
-      halfDay: attendance.filter(
-        (item) => item.status === "HALF_DAY"
-      ).length,
 
-      leave: attendance.filter(
-        (item) => item.status === "LEAVE"
-      ).length,
-    };
+
+
+
+
+
 
     return res.status(200).json({
       success: true,
@@ -256,8 +248,10 @@ try {
         month: selectedMonth,
         year: selectedYear,
       },
-
-      summary,
+    summery:{
+      totalStudent,activeStudent,dropStudent,passOutStudent
+    }
+    
     });
 
 } catch (error) {

@@ -8,6 +8,7 @@ import { emailQueue } from "../../queues/emailQueue";
 import StudentLead from "../../models/LeadModel";
 import { ModuleModel } from "../../models/ModuleModel";
 import { TeacherAttendance } from "../../models/TeacherAtendence";
+import { StudentModel } from "../../models/studentModel";
   
 
 
@@ -335,11 +336,7 @@ const getCounts = <T extends string>(
   }));
 };
 
-export const getDashboardData = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const getDashboardData = async (req: Request,res: Response,next: NextFunction) => {
   try {
     const now = new Date();
 
@@ -362,15 +359,9 @@ export const getDashboardData = async (
     const [
       totalLeads,
       todayLeads,
-      convertedLeads,
-      interestedLeads,
-      pendingDemos,
-      todayDemos,
-      totalModules,
-      publishedModules,
-      totalQuizSubmissions,
-      passedQuizSubmissions,
-      attendanceThisMonth,
+      totalStudent,activeStudent,dropStudent,passOutStudent,
+      todayStudentFollowup,
+      todayLeadFollowup,
       recentLeads,
       leadsByStatusRaw,
       leadsBySourceRaw,
@@ -386,68 +377,30 @@ export const getDashboardData = async (
           $gte: startOfToday,
           $lt: startOfTomorrow,
         },
+        status:"NEW"
       }),
 
-      StudentLead.countDocuments({
-        $or: [
-          { converted: true },
-          { status: "CONVERTED" },
-        ],
-      }),
+                       StudentModel.countDocuments(),
+                       StudentModel.countDocuments({studentStatus:"active"}),
+                       StudentModel.countDocuments({studentStatus:"drop"}),
+                       StudentModel.countDocuments({studentStatus:"pass out"}),
+                      StudentModel.countDocuments({
+  nextFollowup: {
+    $gte: startOfToday,
+    $lt: startOfTomorrow,
+  },
+}),
+StudentLead.countDocuments({
+  nextFollowUpdate: {
+    $gte: startOfToday,
+    $lt: startOfTomorrow,
+  },
+}),
 
-      StudentLead.countDocuments({
-        status: "COUNSELING",
-      }),
+    
+    
 
-      StudentLead.countDocuments({
-        "demo.status": "active",
-      }),
-
-      StudentLead.countDocuments({
-        "demo.demodate": {
-          $gte: startOfToday,
-          $lt: startOfTomorrow,
-        },
-        "demo.status": "active",
-      }),
-
-      // Module summary
-      ModuleModel.countDocuments(),
-
-      ModuleModel.countDocuments({
-        status: "PUBLISHED",
-        isActive: true,
-      }),
-
-      ModuleModel.aggregate([
-        {
-          $project: {
-            total: { $size: "$answerSubmite" },
-          },
-        },
-        {
-          $group: {
-            _id: null,
-            count: { $sum: "$total" },
-          },
-        },
-      ]).then((rows) => rows[0]?.count ?? 0),
-
-      ModuleModel.aggregate([
-        { $unwind: "$answerSubmite" },
-        { $match: { "answerSubmite.pass": true } },
-        { $count: "count" },
-      ]).then((rows) => rows[0]?.count ?? 0),
-
-      // Attendance records created during the current month
-      TeacherAttendance.countDocuments({
-        date: {
-          $gte: startOfMonth,
-          $lt: startOfTomorrow,
-        },
-      }),
-
-      // Latest leads
+   
       StudentLead.find()
         .select(
           "name phone email course interestedCourse status priority source createdAt demo"
@@ -571,15 +524,6 @@ export const getDashboardData = async (
       attendanceByStatusRaw
     );
 
-    const totalAttendance = attendanceByStatus.reduce(
-      (sum, item) => sum + item.count,
-      0
-    );
-
-    const presentAttendance =
-      attendanceByStatus.find(
-        (item) => item.label === "PRESENT"
-      )?.count ?? 0;
 
     return res.status(200).json({
       success: true,
@@ -588,27 +532,8 @@ export const getDashboardData = async (
       summary: {
         totalLeads,
         todayLeads,
-        convertedLeads,
-        interestedLeads,
-        pendingDemos,
-        todayDemos,
-
-        totalModules,
-        publishedModules,
-
-        totalQuizSubmissions,
-        passedQuizSubmissions,
-        failedQuizSubmissions:
-          totalQuizSubmissions - passedQuizSubmissions,
-
-        attendanceThisMonth,
-        presentAttendance,
-        attendanceRate:
-          totalAttendance > 0
-            ? Number(
-                ((presentAttendance / totalAttendance) * 100).toFixed(2)
-              )
-            : 0,
+        totalStudent,activeStudent,dropStudent,passOutStudent,
+       todayStudentFollowup,todayLeadFollowup
       },
 
       charts: {
