@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from "mongoose";
 import { learningDB } from "../helper/database";
 
 
-export type LeadStatus =  "NEW" | "COUNSELING" |"DEMO" |"DEMODONE"| "CONVERTED" | "ACTIVE" | "INACTIVE"  | "NOT_INTERESTED";
+export type LeadStatus =  "NEW" |  "INTERESTED" | "COUNSELING" |"DEMO" |"DEMODONE"| "CONVERTED" | "ACTIVE" | "INACTIVE"  | "NOT_INTERESTED";
 
 export type LeadPriority = "LOW" | "MEDIUM" | "HIGH";
 
@@ -38,7 +38,7 @@ note:String
 interface IFollowup {
 date:Date;
 note:String;
-
+connected:Boolean;
 }
 
 export interface IStudentLead extends Document {
@@ -80,6 +80,7 @@ export interface IStudentLead extends Document {
 demo:IDemo;
   createdBy?: mongoose.Types.ObjectId;
    nextFollowUpdate:Date | null;
+   lastConnected:Boolean  ;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -211,6 +212,7 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       type: String,
       enum: [
         "NEW",
+        "INTERESTED",
         "COUNSELING",
         "DEMO",
         "DEMODONE",
@@ -248,8 +250,18 @@ const StudentLeadSchema = new Schema<IStudentLead>(
 
     followups:[ {
       date:{type:Date},
-      note:{ type:String}}],
-
+      note:{ type:String},
+      connected:{
+        type:Boolean,
+        default:false
+      }
+    }
+    
+    ],
+   lastConnected:{
+    type:Boolean,
+        default:false
+   },
 
     nextFollowUpdate:{type:Date,default:null},
 

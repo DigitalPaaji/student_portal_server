@@ -429,7 +429,9 @@ StudentLead.countDocuments({
         },
       ]),
 
-      // Daily leads chart, last 7 days
+    
+
+      
       StudentLead.aggregate([
         {
           $match: {

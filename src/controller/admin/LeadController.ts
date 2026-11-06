@@ -126,13 +126,15 @@ const SOURCES = [
 ];
 
 const STATUSES = [
-  "NEW",
-  "CONTACTED",
-  "INTERESTED",
-  "FOLLOW_UP",
-  "CONVERTED",
-  "NOT_INTERESTED",
-  "LOST",
+        "NEW",
+        "INTERESTED",
+        "COUNSELING",
+        "DEMO",
+        "DEMODONE",
+        "CONVERTED",
+        "ACTIVE",
+        "INACTIVE",
+        "NOT_INTERESTED",
 ];
 
 const PRIORITIES = ["LOW", "MEDIUM", "HIGH"];
@@ -575,6 +577,7 @@ export const EditLead = async (
       preferredMode,
       notes,
       converted,
+      
     } = req.body;
 
     // Required fields
@@ -674,7 +677,7 @@ export const AddFollowup = async (
   
     const { id } = req.params;
 
-    const {note,nextFollowUpdate} = req.body;
+    const {note,nextFollowUpdate,lastConnected} = req.body;
 
     // Required fields
     if (!note) {
@@ -698,7 +701,8 @@ export const AddFollowup = async (
 
      const followup= {
       date : new Date(Date.now()) ,
-      note
+      note,
+      connected:lastConnected ? true : false,
      }
     
      lead.followups.push(followup)
@@ -709,7 +713,7 @@ export const AddFollowup = async (
        lead.nextFollowUpdate=null
 
      }
-    
+      lead.lastConnected = lastConnected? true : false
 
     await lead.save();
 
@@ -747,6 +751,7 @@ export const GetAllLeads = async (
     // Map lead access permissions to database statuses
     const accessStatusMap: Record<string, string> = {
       newlead: "NEW",
+      interested:"INTERESTED",
       demolead: "DEMO",
       demodonelead: "DEMODONE",
       activelead: "ACTIVE",
@@ -777,7 +782,7 @@ export const GetAllLeads = async (
       StudentLead.find(filters)
         .skip(skip)
         .limit(limit)
-        .select("name phone email city source status priority createdAt")
+        .select("name phone email city source status priority createdAt lastConnected")
         .sort({ createdAt: -1 })
         .lean(),
 
@@ -807,8 +812,9 @@ export const GetAllLeads = async (
 
 export const getLeadsStatusCounsta =async( req: Request,res: Response,next: NextFunction)=>{
 try {
-  const [NEW,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED]= await  Promise.all([
+  const [NEW,INTERESTED,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED]= await  Promise.all([
      StudentLead.countDocuments({status:"NEW"}),
+     StudentLead.countDocuments({status:"INTERESTED"}),
      StudentLead.countDocuments({status:"COUNSELING"}),
      StudentLead.countDocuments({status:"DEMO"}),
      StudentLead.countDocuments({status:"DEMODONE"}),
@@ -833,7 +839,7 @@ const [WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,SEMINAR,
 ])
 
 
-return res.status(200).json({success:true,leadStauts:{NEW,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED},leadsource:{WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,SEMINAR,OTHER}      })
+return res.status(200).json({success:true,leadStauts:{NEW,INTERESTED,COUNSELING,DEMO,DEMODONE,CONVERTED,ACTIVE,INACTIVE,NOT_INTERESTED},leadsource:{WEBSITE,FACEBOOK,INSTAGRAM,GOOGLE,WHATSAPP,REFERRAL,CALL,WALK_IN,SEMINAR,OTHER}      })
 
 } catch (error) {
   next(error)
