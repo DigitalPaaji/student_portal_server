@@ -362,6 +362,7 @@ export const getDashboardData = async (req: Request,res: Response,next: NextFunc
       totalStudent,activeStudent,dropStudent,passOutStudent,
       todayStudentFollowup,
       todayLeadFollowup,
+      todayContected,
       recentLeads,
       leadsByStatusRaw,
       leadsBySourceRaw,
@@ -397,7 +398,22 @@ StudentLead.countDocuments({
   },
 }),
 
-    
+    await StudentLead.aggregate([
+  {
+    $unwind: "$followups"
+  },
+  {
+    $match: {
+      "followups.date": {
+        $gte: startOfToday,
+        $lt: startOfTomorrow
+      }
+    }
+  },
+  {
+    $count: "total"
+  }
+]),
     
 
    
@@ -535,7 +551,7 @@ StudentLead.countDocuments({
         totalLeads,
         todayLeads,
         totalStudent,activeStudent,dropStudent,passOutStudent,
-       todayStudentFollowup,todayLeadFollowup
+       todayStudentFollowup,todayLeadFollowup,todayContected
       },
 
       charts: {

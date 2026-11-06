@@ -677,7 +677,7 @@ export const AddFollowup = async (
   
     const { id } = req.params;
 
-    const {note,nextFollowUpdate,lastConnected} = req.body;
+    const {note,nextFollowUpdate,lastConnected,newStatus} = req.body;
 
     // Required fields
     if (!note) {
@@ -714,6 +714,11 @@ export const AddFollowup = async (
 
      }
       lead.lastConnected = lastConnected? true : false
+
+if(newStatus){
+  lead.status = newStatus
+}
+
 
     await lead.save();
 
