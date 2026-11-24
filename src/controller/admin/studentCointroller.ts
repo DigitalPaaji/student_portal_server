@@ -250,15 +250,49 @@ const {access} = req.admin;
 
 export const getStatus= async(req:Request,res:Response,next:NextFunction)=>{
   try {
-const [AllStudents,ActiveStudents,DropStudents,PassOutStudent]= await Promise.all([
+const [AllStudents,ActiveStudents,DropStudents,PassOutStudent,totalFees ]= await Promise.all([
 await StudentModel.countDocuments(),
 await StudentModel.countDocuments({studentStatus:"active"}),
 await StudentModel.countDocuments({studentStatus:"drop"}),
-await StudentModel.countDocuments({studentStatus:"pass out"}),
+await StudentModel.countDocuments({studentStatus:"pass out"}), 
+ await StudentModel.aggregate([
+  {
+    $group: {
+      _id: null,
+
+      totalCourseFees: {
+        $sum: "$coursefees",
+      },
+
+      totalSubmittedFees: {
+        $sum: "$submitedfees",
+      },
+
+      totalDiscount: {
+        $sum: "$coursediscount.amount",
+      },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      totalCourseFees: 1,
+      totalSubmittedFees: 1,
+      totalDiscount: 1,
+
+      remainingFees: {
+        $subtract: [
+          { $subtract: ["$totalCourseFees", "$totalDiscount"] },
+          "$totalSubmittedFees",
+        ],
+      },
+    },
+  },
+])
 ])
     
 
-return res.status(200).json({success:true,studentStatus:{AllStudents,ActiveStudents,DropStudents,PassOutStudent}})
+return res.status(200).json({success:true,studentStatus:{AllStudents,ActiveStudents,DropStudents,PassOutStudent,totalFees:totalFees[0]}})
 
 
   } catch (error) {

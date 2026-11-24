@@ -57,17 +57,18 @@ const AnswerSubmitSchema = new Schema<IAnswerSubmit>(
 
 const ModuleSchema = new Schema<IModule>(
   {
+
     subjectId: {
       type: Schema.Types.ObjectId,
       ref: "Subject",
       required: true,
       index: true,
     },
-   level:{
+    level:{
     type:Number,
     default:1
      },
-   title: {
+    title: {
       type: String,
       required: true,
       trim: true, 
@@ -97,8 +98,10 @@ const ModuleSchema = new Schema<IModule>(
     createBy: {
       type: Schema.Types.ObjectId,
       required: true,
-      refPath: "createByModel",
+       refPath: "createByModel",
     },
+
+
 
     createByModel: {
       type: String,
@@ -123,22 +126,22 @@ const ModuleSchema = new Schema<IModule>(
   default:null
  },
 
- assignStudent:[{
- type:mongoose.Schema.Types.ObjectId,
- ref:"Student"
- }],
+  assignStudent:[{
+   type:mongoose.Schema.Types.ObjectId,
+   ref:"Student"
+    }],
+
 
     isActive: {
       type: Boolean,
       default: true,
     },
-moduleCompleted:{
+   moduleCompleted:{
   type:Boolean,
-  default:false,
-},
+  default:false,},
+
 moduleCompletedDate:{
   type:Date,
-
 }
 
 

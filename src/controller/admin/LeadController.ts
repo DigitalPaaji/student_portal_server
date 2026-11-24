@@ -980,15 +980,14 @@ export const getUpcommingFolowup = async (
 
     // Fetch follow-ups for selected date
     const upcomingLeads = await StudentLead.find({
+      status: { $nin: ["NOT_INTERESTED", "INACTIVE"] },
       nextFollowUpdate: {
         $gte: startDate,
         $lt: endDate,
       },
-    })
-      .select(
+    }).select(
         "name phone email city source status priority nextFollowUpdate"
-      )
-      .sort({ nextFollowUpdate: 1 })
+      ).sort({ nextFollowUpdate: 1 })
       .lean();
 
     return res.status(200).json({
