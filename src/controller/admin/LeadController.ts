@@ -787,8 +787,8 @@ export const GetAllLeads = async (
       StudentLead.find(filters)
         .skip(skip)
         .limit(limit)
-        .select("name phone email city source status priority createdAt lastConnected")
-        .sort({ createdAt: -1 })
+        .select("name phone email city source status priority createdAt lastConnected updatedAt")
+        .sort({ updatedAt: -1 })
         .lean(),
 
       StudentLead.countDocuments(filters),

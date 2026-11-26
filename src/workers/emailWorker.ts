@@ -27,7 +27,7 @@ export const emailWorker = new Worker(
       tempPassword,studentId=null
     } = job.data;
 if(studentId){ 
-  console.log("mailsssssssssssssss")
+
 sendStudentWelcomeEmail(targetEmail,
       tempPassword,studentId)
 }else{

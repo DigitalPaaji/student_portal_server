@@ -189,8 +189,6 @@ const StudentLeadSchema = new Schema<IStudentLead>(
 
    },
 
-   
-
     source: {
       type: String,
       enum: [
@@ -220,7 +218,6 @@ const StudentLeadSchema = new Schema<IStudentLead>(
         "ACTIVE",
         "INACTIVE",
         "NOT_INTERESTED",
-      
       ],
       default: "NEW",
     },
@@ -236,7 +233,6 @@ const StudentLeadSchema = new Schema<IStudentLead>(
       enum: ["online", "offline"],
       default: "offline",
     },
-
 
     notes: {
       type: String,
@@ -277,9 +273,7 @@ const StudentLeadSchema = new Schema<IStudentLead>(
   }
 );
 
-/* ---------------------------------- */
-/* Model */
-/* ---------------------------------- */
+
 
 const StudentLead = learningDB.model<IStudentLead>(
   "StudentLead",
